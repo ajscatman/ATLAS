@@ -22,12 +22,13 @@ python manage.py startapp finalproject
 term. 1 frontend start:
 cd frontend
 npm start
+PS C:\Users\maman\Desktop\ATLAS\atlas\frontend> npm start
 
 term. 2 backend start: 
 cd atlas 
 python manage.py runserver
 npm start
-
+PS C:\Users\maman\Desktop\ATLAS\atlas> python manage.py runserver
 
 atlas folder is backend 
 finalproject folder is backend/frontend (django)

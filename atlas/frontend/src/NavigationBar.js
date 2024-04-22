@@ -36,9 +36,14 @@ const NavigationBar = () => {
         <div className="collapse navbar-collapse" id="navbarNav">
           <ul className="navbar-nav ms-auto">
             {isAuthenticated ? (
-              <li className="nav-item">
-                <button className="logout-btn" onClick={handleLogout}>Logout</button>
-              </li>
+              <>
+                <li className="nav-item">
+                  <Link to="/profile" className="nav-link">Profile</Link>
+                </li>
+                <li className="nav-item">
+                  <button className="logout-btn" onClick={handleLogout}>Logout</button>
+                </li>
+              </>
             ) : (
               <>
                 <li className="nav-item">

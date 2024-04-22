@@ -6,6 +6,7 @@ import RegistrationForm from './RegistrationForm';
 import LoginForm from './LoginForm';
 import HomePage from './HomePage';
 import NavigationBar from './NavigationBar';
+import ProfilePage from './ProfilePage';
 
 const App = () => {
   const isAuthenticated = () => {
@@ -27,6 +28,7 @@ const App = () => {
           <Route path="/login" element={<LoginForm />} />
           <Route path="/home" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
           <Route path="/register" element={<RegistrationForm />} />
+          <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
         </Routes>
         <ToastContainer />
       </div>
