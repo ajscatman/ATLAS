@@ -23,10 +23,9 @@ const App = () => {
       <div>
         <NavigationBar />
         <Routes>
-          <Route path="/" element={<Navigate to="/login" />} />
+          <Route path="/" element={<LoginForm />} />
           <Route path="/home" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
           <Route path="/register" element={<RegistrationForm />} />
-          <Route path="/login" element={<LoginForm />} />
         </Routes>
         <ToastContainer />
       </div>

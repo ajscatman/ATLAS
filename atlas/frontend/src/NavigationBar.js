@@ -10,7 +10,7 @@ const NavigationBar = () => {
   const handleLogout = () => {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
-    window.location.href = '/login';
+    window.location.href = '/';
   };
 
   return (
@@ -28,7 +28,7 @@ const NavigationBar = () => {
         ) : (
           <>
             <li>
-              <Link to="/login">Login</Link>
+              <Link to="/">Login</Link>
             </li>
             <li>
               <Link to="/register">Register</Link>
