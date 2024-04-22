@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 const RegistrationForm = () => {
   const [firstName, setFirstName] = useState('');
@@ -8,6 +10,7 @@ const RegistrationForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [password2, setPassword2] = useState('');
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -20,12 +23,12 @@ const RegistrationForm = () => {
         password,
         password2,
       });
-      console.log(response.data);
-      // Handle successful registration, e.g., redirect to login page
+      console.log('Registration successful');
+      toast.success('Registration successful');
+      navigate('/login');
     } catch (error) {
-      //   console.error(error);
       console.error('Registration error:', error.response);
-      // Handle registration error, display error message to the user
+      toast.error('Registration failed');
     }
   };
 

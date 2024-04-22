@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 const LoginForm = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -13,15 +16,15 @@ const LoginForm = () => {
         password,
       });
       const { refresh, access } = response.data;
-      // Store the tokens
       localStorage.setItem('refreshToken', refresh);
       localStorage.setItem('accessToken', access);
 
-      console.log(response.data);
-      // Handle successful login, e.g., store tokens, redirect to protected page
+      console.log('Login successful');
+      toast.success('Login successful');
+      navigate('/home');
     } catch (error) {
       console.error(error);
-      // Handle login error, display error message to the user
+      toast.error('Login failed');
     }
   };
 

@@ -4,6 +4,17 @@ test local django superuser:
 aj
 Johnwick123$
 
+dependancies:
+django
+django restframework
+simplejwt
+coreheaders
+axios
+react
+react-toastify
+react-bootstrap*
+
+
 inits:
 django-admin startproject admin
 python manage.py startapp finalproject
