@@ -18,10 +18,10 @@ const LoginForm = () => {
       const { refresh, access } = response.data;
       localStorage.setItem('refreshToken', refresh);
       localStorage.setItem('accessToken', access);
-  
+
       console.log('Login successful');
       toast.success('Login successful');
-      navigate('/home');
+      navigate('/home', { state: { isAuthenticated: true } });
     } catch (error) {
       console.error(error);
       toast.error('Login failed');
