@@ -18,7 +18,7 @@ const LoginForm = () => {
       const { refresh, access } = response.data;
       localStorage.setItem('refreshToken', refresh);
       localStorage.setItem('accessToken', access);
-
+  
       console.log('Login successful');
       toast.success('Login successful');
       navigate('/home');

@@ -23,7 +23,8 @@ const App = () => {
       <div>
         <NavigationBar />
         <Routes>
-          <Route path="/" element={<LoginForm />} />
+          <Route path="/" element={<Navigate to="/login" />} />
+          <Route path="/login" element={<LoginForm />} />
           <Route path="/home" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
           <Route path="/register" element={<RegistrationForm />} />
         </Routes>
