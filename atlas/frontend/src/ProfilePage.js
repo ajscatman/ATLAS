@@ -49,19 +49,19 @@ const ProfilePage = () => {
     });
   };
 
-  const handlePasswordChange = (e) => {
-    setEditedProfile({
-      ...editedProfile,
-      password: e.target.value,
-    });
-  };
+//   const handlePasswordChange = (e) => {
+//     setEditedProfile({
+//       ...editedProfile,
+//       password: e.target.value,
+//     });
+//   };
 
-  const handleConfirmPasswordChange = (e) => {
-    setEditedProfile({
-      ...editedProfile,
-      confirmPassword: e.target.value,
-    });
-  };
+//   const handleConfirmPasswordChange = (e) => {
+//     setEditedProfile({
+//       ...editedProfile,
+//       confirmPassword: e.target.value,
+//     });
+//   };
 
   const handleConfirmPasswordSubmit = async () => {
     if (password === confirmPassword) {

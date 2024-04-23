@@ -49,6 +49,11 @@ REST_FRAMEWORK = {
     )
 }
 
+IGDB_CLIENT_ID = 'kigzb47i9x1pw53j474utzpiav1j71'
+IGDB_CLIENT_SECRET = 'ncvlewavbbg6ourdl0no5i7gf7308e'
+IGDB_REDIRECT_URI = 'http://localhost:8000/api/igdb-oauth-callback/'
+FRONTEND_URL = 'http://localhost:3000'
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
