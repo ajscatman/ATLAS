@@ -50,11 +50,17 @@ const ProfilePage = () => {
   };
 
   const handlePasswordChange = (e) => {
-    setPassword(e.target.value);
+    setEditedProfile({
+      ...editedProfile,
+      password: e.target.value,
+    });
   };
 
   const handleConfirmPasswordChange = (e) => {
-    setConfirmPassword(e.target.value);
+    setEditedProfile({
+      ...editedProfile,
+      confirmPassword: e.target.value,
+    });
   };
 
   const handleConfirmPasswordSubmit = async () => {
@@ -88,15 +94,27 @@ const ProfilePage = () => {
 
   const handleApplyClick = async () => {
     try {
-      await axios.put('http://localhost:8000/api/profile/', editedProfile, {
+      if (password && password !== confirmPassword) {
+        toast.error('Passwords do not match. Please try again.');
+        return;
+      }
+      const requestData = {
+        ...editedProfile,
+        ...(password && { password }),
+      };
+      await axios.put('http://localhost:8000/api/profile/', requestData, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
         },
       });
       setProfile(editedProfile);
       setIsEditing(false);
+      setPassword('');
+      setConfirmPassword('');
+      toast.success('Profile updated successfully.');
     } catch (error) {
       console.error('Error updating profile:', error);
+      toast.error('An error occurred. Please try again.');
     }
   };
 
@@ -107,38 +125,41 @@ const ProfilePage = () => {
         {profile ? (
           <div className="profile-form">
             {isConfirmingPassword ? (
-              <>
+            <>
                 <div className="form-group">
-                  <input
+                <input
                     type="password"
                     name="password"
                     value={password}
-                    onChange={handlePasswordChange}
+                    onChange={(e) => setPassword(e.target.value)}
                     className="form-input"
                     placeholder="Password"
-                  />
+                />
                 </div>
                 <div className="form-group">
-                  <input
+                <input
                     type="password"
                     name="confirmPassword"
                     value={confirmPassword}
-                    onChange={handleConfirmPasswordChange}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
                     className="form-input"
                     placeholder="Confirm Password"
-                  />
+                />
                 </div>
                 <div className="button-group">
-                  <button onClick={handleConfirmPasswordSubmit} className="apply-button">
+                <button onClick={handleConfirmPasswordSubmit} className="apply-button">
                     Confirm
-                  </button>
-                  <button onClick={handleCancelClick} className="cancel-button">
+                </button>
+                <button onClick={handleCancelClick} className="cancel-button">
                     Cancel
-                  </button>
+                </button>
                 </div>
-              </>
+            </>
             ) : isEditing ? (
-              <>
+                <>
+                <h2 className="profile-subheading">
+                  Hi, {profile.first_name} {profile.last_name}!
+                </h2>
                 <div className="form-group">
                   <input
                     type="text"
@@ -175,6 +196,26 @@ const ProfilePage = () => {
                     className="form-input"
                   />
                 </div>
+                <div className="form-group">
+                  <input
+                    type="password"
+                    name="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="form-input"
+                    placeholder="New Password"
+                  />
+                </div>
+                <div className="form-group">
+                  <input
+                    type="password"
+                    name="confirmPassword"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="form-input"
+                    placeholder="Confirm New Password"
+                  />
+                </div>
                 <div className="button-group">
                   <button onClick={handleApplyClick} className="apply-button">
                     Apply
@@ -186,11 +227,12 @@ const ProfilePage = () => {
               </>
             ) : (
               <>
+                <h2 className="profile-subheading">
+                  Hi, {profile.first_name} {profile.last_name}!
+                </h2>
                 <div className="profile-details">
                   <p>Username: {profile.username}</p>
                   <p>Email: {profile.email}</p>
-                  <p>First Name: {profile.first_name}</p>
-                  <p>Last Name: {profile.last_name}</p>
                 </div>
                 <button onClick={handleEditClick} className="edit-button">
                   Edit
