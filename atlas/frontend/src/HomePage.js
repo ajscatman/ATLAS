@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import './HomePage.css'; // Ensure this is correctly importing the CSS file
+import { useNavigate } from 'react-router-dom';
+import './HomePage.css';
 
 const HomePage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
-  const [searchType, setSearchType] = useState('title');  // Only title and developer are valid
+  const [searchType, setSearchType] = useState('title'); // Can be 'title' or 'developer'
+  const navigate = useNavigate();
 
   const handleSearch = async () => {
     try {
@@ -14,6 +16,10 @@ const HomePage = () => {
     } catch (error) {
       console.error('Error searching games:', error);
     }
+  };
+
+  const showGameDetails = (gameId) => {
+    navigate(`/game/${gameId}`);
   };
 
   return (
@@ -34,10 +40,10 @@ const HomePage = () => {
       </div>
       <div className="game-grid">
         {searchResults.map((game) => (
-          <div key={game.id} className="game-card">
+          <div key={game.id} className="game-card" onClick={() => showGameDetails(game.id)}>
             <img src={game.cover} alt={game.name} />
-            <div style={{'min-height': 70+'px'}}>
-            <h3>{game.name}</h3>
+            <div style={{ minHeight: '70px' }}>
+              <h3>{game.name}</h3>
             </div>
             <div className={`rating-box ${getRatingClass(game.rating)}`}>
               Rating: {typeof game.rating === 'number' ? game.rating.toFixed(2) : 'Not Rated'}
@@ -54,13 +60,13 @@ const HomePage = () => {
 
 function getRatingClass(rating) {
   if (rating >= 70) {
-      return 'rating-green';
+    return 'rating-green';
   } else if (rating >= 40) {
-      return 'rating-orange';
+    return 'rating-orange';
   } else if (rating < 40) {
-      return 'rating-red';
+    return 'rating-red';
   } else {
-      return '';
+    return '';
   }
 }
 

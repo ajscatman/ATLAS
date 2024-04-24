@@ -7,6 +7,7 @@ import LoginForm from './LoginForm';
 import HomePage from './HomePage';
 import NavigationBar from './NavigationBar';
 import ProfilePage from './ProfilePage';
+import GameDetailsPage from './GameDetailsPage';
 
 const App = () => {
   const isAuthenticated = () => {
@@ -29,6 +30,7 @@ const App = () => {
           <Route path="/home" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
           <Route path="/register" element={<RegistrationForm />} />
           <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+          <Route path="/game/:id" element={<ProtectedRoute><GameDetailsPage /></ProtectedRoute>} />
         </Routes>
         <ToastContainer />
       </div>

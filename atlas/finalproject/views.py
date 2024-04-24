@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
 from django.conf import settings
+from django.http import JsonResponse
 from rest_framework import generics, status, permissions
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -9,6 +10,7 @@ from django.contrib.auth import authenticate
 from .serializers import UserRegistrationSerializer, UserLoginSerializer, UserProfileSerializer
 import requests
 from .igdb_api import search_games, igdb_api_request
+
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -76,7 +78,15 @@ def search_games(query, search_type='title'):
     return games
 
 
+def game_details_view(request, game_id):
+    endpoint = 'games'
+    query = f'fields name, first_release_date, genres.name, platforms.name, summary, storyline, cover.url, rating; where id = {game_id};'
+    response = igdb_api_request(endpoint, query)
 
+    if response:
+        return JsonResponse(response[0], safe=False)  # Assuming the first item in the response is the game data
+    else:
+        return JsonResponse({'error': 'Game not found'}, status=404)
 
 
 def igdb_oauth_callback(request):
