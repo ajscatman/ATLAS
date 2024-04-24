@@ -35,9 +35,9 @@ const HomePage = () => {
             <p className={getRatingClass(game.rating)}>
               Rating: {typeof game.rating === 'number' ? game.rating.toFixed(2) : 'Not Rated'}
             </p>
-            <p>Developers: {game.developers.join(', ')}</p>
-            <p>Publishers: {game.publishers.join(', ')}</p>
-            <p>Available on: {game.platforms.join(', ')}</p>
+            <p><b>Developers: </b>{game.developers.join(', ')}</p>
+            {/* <p>Publishers: {game.publishers.join(', ')}</p> */}
+            <p><b>Available on: </b>{game.platforms.join(', ')}</p>
           </div>
         ))}
       </div>
