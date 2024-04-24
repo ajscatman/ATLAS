@@ -24,12 +24,12 @@ const HomePage = () => {
 
   return (
     <div className="home-page">
-      <h1>Welcome to the Home Page</h1>
-      <div className="search-type-buttons">
+      <h1 className="animated-element">Welcome to the Home Page</h1>
+      <div className="search-type-buttons animated-element">
         <button onClick={() => setSearchType('title')} className={searchType === 'title' ? 'active' : ''}>Title</button>
         <button onClick={() => setSearchType('developer')} className={searchType === 'developer' ? 'active' : ''}>Developer</button>
       </div>
-      <div className="search-bar">
+      <div className="search-bar animated-element">
         <input
           type="text"
           value={searchQuery}
@@ -41,16 +41,16 @@ const HomePage = () => {
       <div className="game-grid">
         {searchResults.map((game) => (
           <div key={game.id} className="game-card animated-element" onClick={() => showGameDetails(game.id)}>
-            <img src={game.cover} alt={game.name} className="animated-element" />
-            <div style={{ minHeight: '70px' }} className="animated-element">
+            <img src={game.cover} alt={game.name} />
+            <div style={{ minHeight: '70px' }}>
               <h3>{game.name}</h3>
             </div>
-            <div className={`rating-box ${getRatingClass(game.rating)} animated-element`}>
+            <div className={`rating-box ${getRatingClass(game.rating)}`}>
               Rating: {typeof game.rating === 'number' ? game.rating.toFixed(2) : 'Not Rated'}
             </div>
-            <p className="animated-element">Developers: {game.developers.join(', ')}</p>
-            <p className="animated-element">Publishers: {game.publishers.join(', ')}</p>
-            <p className="animated-element">Available on: {game.platforms.join(', ')}</p>
+            <p>Developers: {game.developers.join(', ')}</p>
+            <p>Publishers: {game.publishers.join(', ')}</p>
+            <p>Available on: {game.platforms.join(', ')}</p>
           </div>
         ))}
       </div>

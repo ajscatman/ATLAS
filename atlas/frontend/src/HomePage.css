@@ -10,8 +10,8 @@
   }
 
 
-.animated-element{
-    animation: fadeInUp 1s ease 0s forwards;
+.animated-element {
+  animation: fadeInUp 1s ease 0s forwards;
 }
 button.active {
     background-color: #4CAF50; /* Green background for the active button */
@@ -33,7 +33,7 @@ button.active {
     flex: 1;
     padding: 10px;
     font-size: 16px;
-  }
+  }ve
   
   .search-bar button {
     padding: 10px 20px;
@@ -61,6 +61,15 @@ button.active {
     
   }
 
+  .game-card:hover {
+    border: 1px solid rgba(255, 255, 255, 0.833);
+    background-color: rgb(56, 56, 56);
+    color: rgb(223, 223, 223);
+    border-radius: 4px;
+    padding: 10px;
+    text-align: center;
+  }
+
   .game-card h3 {
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -74,7 +83,7 @@ button.active {
     
  }
 
-  .game-card:hover {
+  .game-card.animated-element:hover {
     transform: scale(1.03);
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   }
