@@ -90,12 +90,6 @@
 
     overflow: hidden;
   }
-  @media screen and (max-width: 768px) {
-    .game-videos .video-grid {
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Adjust minmax values for smaller screens */
-      grid-gap: 10px; /* Adjust gap for smaller screens */
-    }
-  }
 
   .game-videos iframe {
     position: absolute;

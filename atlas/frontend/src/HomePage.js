@@ -40,17 +40,17 @@ const HomePage = () => {
       </div>
       <div className="game-grid">
         {searchResults.map((game) => (
-          <div key={game.id} className="game-card" onClick={() => showGameDetails(game.id)}>
-            <img src={game.cover} alt={game.name} />
-            <div style={{ minHeight: '70px' }}>
+          <div key={game.id} className="game-card animated-element" onClick={() => showGameDetails(game.id)}>
+            <img src={game.cover} alt={game.name} className="animated-element" />
+            <div style={{ minHeight: '70px' }} className="animated-element">
               <h3>{game.name}</h3>
             </div>
-            <div className={`rating-box ${getRatingClass(game.rating)}`}>
+            <div className={`rating-box ${getRatingClass(game.rating)} animated-element`}>
               Rating: {typeof game.rating === 'number' ? game.rating.toFixed(2) : 'Not Rated'}
             </div>
-            <p>Developers: {game.developers.join(', ')}</p>
-            <p>Publishers: {game.publishers.join(', ')}</p>
-            <p>Available on: {game.platforms.join(', ')}</p>
+            <p className="animated-element">Developers: {game.developers.join(', ')}</p>
+            <p className="animated-element">Publishers: {game.publishers.join(', ')}</p>
+            <p className="animated-element">Available on: {game.platforms.join(', ')}</p>
           </div>
         ))}
       </div>
