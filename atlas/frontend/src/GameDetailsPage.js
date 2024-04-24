@@ -6,46 +6,78 @@ import './GameDetailsPage.css';
 const GameDetailsPage = () => {
   const { id } = useParams();
   const [gameDetails, setGameDetails] = useState(null);
+  const [isFavorite, setIsFavorite] = useState(false);
 
   useEffect(() => {
-    const fetchGameDetails = async () => {
-      try {
-        const response = await axios.get(`http://localhost:8000/api/games/${id}/`);
-        const details = response.data;
-        
-        // Format the release date
-        const releaseDate = details.first_release_date ? new Date(details.first_release_date * 1000).toLocaleDateString() : 'No release date';
-
-        // Extract the genre and platform names
-        const genres = details.genres ? details.genres.map(genre => genre.name).join(', ') : 'No genres listed';
-        const platforms = details.platforms ? details.platforms.map(platform => platform.name).join(', ') : 'No platforms listed';
-
-        const summary = details.summary || 'No summary available.';
-
-        const videos = details.videos ? details.videos.map(video => ({
-          videoId: video.video_id
-        })) : [];
-    
-        const websites = details.websites ? details.websites.map(site => ({
-          url: site.url
-        })) : [];
-
-        setGameDetails({
-          ...details,
-          first_release_date: releaseDate,
-          genres,
-          platforms,
-          summary,
-          videos,
-          websites,
-        });
-      } catch (error) {
-        console.error('Error fetching game details:', error);
-      }
-    };
-
     fetchGameDetails();
+    checkFavoriteStatus();
   }, [id]);
+
+  const fetchGameDetails = async () => {
+    try {
+      const response = await axios.get(`http://localhost:8000/api/games/${id}/`);
+      const details = response.data;
+      
+      // Format the release date
+      const releaseDate = details.first_release_date ? new Date(details.first_release_date * 1000).toLocaleDateString() : 'No release date';
+
+      // Extract the genre and platform names
+      const genres = details.genres ? details.genres.map(genre => genre.name).join(', ') : 'No genres listed';
+      const platforms = details.platforms ? details.platforms.map(platform => platform.name).join(', ') : 'No platforms listed';
+
+      const summary = details.summary || 'No summary available.';
+
+      const videos = details.videos ? details.videos.map(video => ({
+        videoId: video.video_id
+      })) : [];
+  
+      const websites = details.websites ? details.websites.map(site => ({
+        url: site.url
+      })) : [];
+
+      setGameDetails({
+        ...details,
+        first_release_date: releaseDate,
+        genres,
+        platforms,
+        summary,
+        videos,
+        websites,
+      });
+    } catch (error) {
+      console.error('Error fetching game details:', error);
+    }
+  };
+
+  const checkFavoriteStatus = async () => {
+    try {
+      const response = await axios.get(`http://localhost:8000/api/check-favorite/?game_id=${id}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+        },
+      });
+      setIsFavorite(response.data.is_favorite);
+    } catch (error) {
+      console.error('Error checking favorite status:', error);
+    }
+  };
+
+  const toggleFavorite = async () => {
+    try {
+      await axios.post(
+        'http://localhost:8000/api/toggle-favorite/',
+        { game_id: id },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+          },
+        }
+      );
+      setIsFavorite(!isFavorite);
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+    }
+  };
 
   if (!gameDetails) {
     return <div>Loading game details...</div>;
@@ -65,6 +97,7 @@ const GameDetailsPage = () => {
         <div className={`rating-box ${getRatingClass(gameDetails.rating)}`} id="rating-box-2">
           <strong>Rating:</strong> {gameDetails.rating ? gameDetails.rating.toFixed(2) : 'Not Rated'}
         </div>
+        <button onClick={toggleFavorite}>{isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}</button>
       </div>
       <div className="game-videos">
         <h2>Videos</h2>
@@ -103,7 +136,5 @@ function getRatingClass(rating) {
       return '';
   }
 }
-
-
 
 export default GameDetailsPage;

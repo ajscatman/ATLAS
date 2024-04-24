@@ -41,6 +41,9 @@ const NavigationBar = () => {
                   <Link to="/profile" className="nav-link">Profile</Link>
                 </li>
                 <li className="nav-item">
+                  <Link to="/favorites" className="nav-link">Favorites</Link>
+                </li>
+                <li className="nav-item">
                   <button className="logout-btn" onClick={handleLogout}>Logout</button>
                 </li>
               </>

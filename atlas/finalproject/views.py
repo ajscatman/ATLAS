@@ -8,8 +8,59 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from .serializers import UserRegistrationSerializer, UserLoginSerializer, UserProfileSerializer
-import requests
 from .igdb_api import search_games, igdb_api_request
+from .models import Favorite
+import requests
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def check_favorite(request):
+    user = request.user
+    game_id = request.GET.get('game_id')
+
+    if not game_id:
+        return Response({'error': 'Game ID is required.'}, status=400)
+
+    is_favorite = Favorite.objects.filter(user=user, game_id=game_id).exists()
+
+    return Response({'is_favorite': is_favorite})
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def toggle_favorite(request):
+    user = request.user
+    game_id = request.data.get('game_id')
+
+    if not game_id:
+        return Response({'error': 'Game ID is required.'}, status=400)
+
+    favorite, created = Favorite.objects.get_or_create(user=user, game_id=game_id)
+
+    if not created:
+        favorite.delete()
+
+    return Response({'is_favorite': created})
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_favorites(request):
+    user = request.user
+    favorites = Favorite.objects.filter(user=user)
+
+    game_ids = [favorite.game_id for favorite in favorites]
+
+    if game_ids:
+        endpoint = 'games'
+        query = f'fields name, cover.url, rating; where id = ({",".join(str(game_id) for game_id in game_ids)}); limit 50;'
+        games = igdb_api_request(endpoint, query)
+        for game in games:
+            cover_url = game.get('cover', {}).get('url', '')
+            if cover_url:
+                game['cover']['url'] = cover_url.replace('t_thumb', 't_cover_big')
+    else:
+        games = []
+
+    return Response(games)
 
 
 @api_view(['POST'])

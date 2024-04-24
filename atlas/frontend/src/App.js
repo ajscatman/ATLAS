@@ -8,6 +8,7 @@ import HomePage from './HomePage';
 import NavigationBar from './NavigationBar';
 import ProfilePage from './ProfilePage';
 import GameDetailsPage from './GameDetailsPage';
+import FavoritesPage from './FavoritesPage';
 
 const App = () => {
   const isAuthenticated = () => {
@@ -31,6 +32,7 @@ const App = () => {
           <Route path="/register" element={<RegistrationForm />} />
           <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
           <Route path="/game/:id" element={<ProtectedRoute><GameDetailsPage /></ProtectedRoute>} />
+          <Route path="/favorites" element={<ProtectedRoute><FavoritesPage /></ProtectedRoute>} />
         </Routes>
         <ToastContainer />
       </div>
