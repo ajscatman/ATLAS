@@ -38,11 +38,11 @@ const HomePage = () => {
             <img src={game.cover} alt={game.name} />
             <h3>{game.name}</h3>
             <p className={getRatingClass(game.rating)}>
-              Rating: {typeof game.rating === 'number' ? game.rating.toFixed(2) : 'Not Rated'}
+              <b>Rating: <u>{typeof game.rating === 'number' ? game.rating.toFixed(2) : 'Not Rated'}</u></b>
             </p>
-            <p>Developers: {game.developers.join(', ')}</p>
-            <p>Publishers: {game.publishers.join(', ')}</p>
-            <p>Available on: {game.platforms.join(', ')}</p>
+            <p><b>Developers: </b>{game.developers.join(', ')}</p>
+            <p><b>Publishers: </b>{game.publishers.join(', ')}</p>
+            <p><i>Available on: {game.platforms.join(', ')} </i></p>
           </div>
         ))}
       </div>
