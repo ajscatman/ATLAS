@@ -80,11 +80,18 @@ def search_games(query, search_type='title'):
 
 def game_details_view(request, game_id):
     endpoint = 'games'
-    query = f'fields name, first_release_date, genres.name, platforms.name, summary, storyline, cover.url, rating; where id = {game_id};'
+    query = f'fields name, first_release_date, genres.name, platforms.name, summary, cover.url, rating; where id = {game_id};'
     response = igdb_api_request(endpoint, query)
 
     if response:
-        return JsonResponse(response[0], safe=False)  # Assuming the first item in the response is the game data
+        game_data = response[0]  # Assuming the first item in the response is the game data
+        
+        # Use the cover_big size for the cover image URL
+        cover_url = game_data.get('cover', {}).get('url', '')
+        if cover_url:
+            game_data['cover'] = cover_url.replace('t_thumb', 't_cover_big')
+
+        return JsonResponse(game_data, safe=False)
     else:
         return JsonResponse({'error': 'Game not found'}, status=404)
 
