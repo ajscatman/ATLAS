@@ -23,36 +23,44 @@ def validate_password(request):
 @api_view(['GET'])
 def search_games_view(request):
     query = request.GET.get('query', '')
-    sort_order = request.GET.get('sort', 'desc') 
-    games = search_games(query, sort_order)
+    search_type = request.GET.get('type', 'title')
+
+    games = search_games(query, search_type) 
     return Response({'results': games})
 
 
 
-def search_games(query, sort_order='desc'):
+def search_games(query, search_type='title'):
     endpoint = 'games'
-    query_string = f'''
-    fields id, name, cover.url, cover.image_id, genres.name, 
-           involved_companies.company.name, involved_companies.developer, 
-           involved_companies.publisher, platforms.name, rating; 
-    where name ~ *"{query}"*; 
-    sort rating {sort_order}; 
-    limit 50;
-    '''
+    base_query = f'fields id, name, cover.url, cover.image_id, involved_companies.company.name, involved_companies.developer, involved_companies.publisher, genres.name, platforms.name, rating; limit 50;'
+
+    if search_type == 'title':
+        query_string = f'{base_query} where name ~ *"{query}"*; sort rating desc;'
+    elif search_type == 'developer':
+        query_string = f'{base_query} where involved_companies.company.name ~ *"{query}"*; sort rating desc;'
+
     response = igdb_api_request(endpoint, query_string)
+    print(f"API Response: {response}")
 
     games = []
     for game in response:
         if 'id' not in game:
             continue
-        
+
         image_id = game.get('cover', {}).get('image_id', '')
         cover_url = f"https://images.igdb.com/igdb/image/upload/t_cover_big/{image_id}.jpg" if image_id else ''
         genres = [genre['name'] for genre in game.get('genres', []) if 'name' in genre]
-        developers = [comp['company']['name'] for comp in game.get('involved_companies', []) if comp.get('developer', False)]
-        publishers = [comp['company']['name'] for comp in game.get('involved_companies', []) if comp.get('publisher', False)]
         platforms = [platform['name'] for platform in game.get('platforms', []) if 'name' in platform]
-        rating = float(game.get('rating', 0))  # Ensuring rating is a float
+        rating = float(game.get('rating', 0))
+
+        developers = []
+        publishers = []
+        for company in game.get('involved_companies', []):
+            if 'company' in company:
+                if company.get('developer', False):
+                    developers.append(company['company'].get('name', ''))
+                if company.get('publisher', False):
+                    publishers.append(company['company'].get('name', ''))
 
         games.append({
             'id': game['id'],

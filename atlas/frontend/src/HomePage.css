@@ -1,3 +1,8 @@
+button.active {
+    background-color: #4CAF50; /* Green background for the active button */
+    color: white;
+  }
+
 .home-page {
     max-width: 1200px;
     margin: 0 auto;

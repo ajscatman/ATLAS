@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import './HomePage.css';
+import './HomePage.css'; // Ensure this is correctly importing the CSS file
 
 const HomePage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
+  const [searchType, setSearchType] = useState('title');  // Only title and developer are valid
 
   const handleSearch = async () => {
     try {
-      const response = await axios.get(`http://localhost:8000/api/search/?query=${searchQuery}`);
+      const response = await axios.get(`http://localhost:8000/api/search/?query=${searchQuery}&type=${searchType}`);
       setSearchResults(response.data.results);
     } catch (error) {
       console.error('Error searching games:', error);
@@ -18,12 +19,16 @@ const HomePage = () => {
   return (
     <div className="home-page">
       <h1>Welcome to the Home Page</h1>
+      <div className="search-type-buttons">
+        <button onClick={() => setSearchType('title')} className={searchType === 'title' ? 'active' : ''}>Title</button>
+        <button onClick={() => setSearchType('developer')} className={searchType === 'developer' ? 'active' : ''}>Developer</button>
+      </div>
       <div className="search-bar">
         <input
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search games..."
+          placeholder={`Search by ${searchType}...`}
         />
         <button onClick={handleSearch}>Search</button>
       </div>
@@ -35,9 +40,9 @@ const HomePage = () => {
             <p className={getRatingClass(game.rating)}>
               Rating: {typeof game.rating === 'number' ? game.rating.toFixed(2) : 'Not Rated'}
             </p>
-            <p><b>Developers: </b>{game.developers.join(', ')}</p>
-            {/* <p>Publishers: {game.publishers.join(', ')}</p> */}
-            <p><b>Available on: </b>{game.platforms.join(', ')}</p>
+            <p>Developers: {game.developers.join(', ')}</p>
+            <p>Publishers: {game.publishers.join(', ')}</p>
+            <p>Available on: {game.platforms.join(', ')}</p>
           </div>
         ))}
       </div>
