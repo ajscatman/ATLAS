@@ -37,12 +37,12 @@ const HomePage = () => {
           <div key={game.id} className="game-card">
             <img src={game.cover} alt={game.name} />
             <h3>{game.name}</h3>
-            <p className={getRatingClass(game.rating)}>
-              <b>Rating: <u>{typeof game.rating === 'number' ? game.rating.toFixed(2) : 'Not Rated'}</u></b>
-            </p>
-            <p><b>Developers: </b>{game.developers.join(', ')}</p>
-            <p><b>Publishers: </b>{game.publishers.join(', ')}</p>
-            <p><i>Available on: {game.platforms.join(', ')} </i></p>
+            <div className={`rating-box ${getRatingClass(game.rating)}`}>
+              Rating: {typeof game.rating === 'number' ? game.rating.toFixed(2) : 'Not Rated'}
+            </div>
+            <p>Developers: {game.developers.join(', ')}</p>
+            <p>Publishers: {game.publishers.join(', ')}</p>
+            <p>Available on: {game.platforms.join(', ')}</p>
           </div>
         ))}
       </div>
