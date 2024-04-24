@@ -32,11 +32,29 @@ const HomePage = () => {
           <div key={game.id} className="game-card">
             <img src={game.cover} alt={game.name} />
             <h3>{game.name}</h3>
+            <p className={getRatingClass(game.rating)}>
+              Rating: {typeof game.rating === 'number' ? game.rating.toFixed(2) : 'Not Rated'}
+            </p>
+            <p>Developers: {game.developers.join(', ')}</p>
+            <p>Publishers: {game.publishers.join(', ')}</p>
+            <p>Available on: {game.platforms.join(', ')}</p>
           </div>
         ))}
       </div>
     </div>
   );
 };
+
+function getRatingClass(rating) {
+  if (rating >= 70) {
+      return 'rating-green';
+  } else if (rating >= 40) {
+      return 'rating-orange';
+  } else if (rating < 40) {
+      return 'rating-red';
+  } else {
+      return '';
+  }
+}
 
 export default HomePage;

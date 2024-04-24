@@ -31,7 +31,14 @@ def search_games_view(request):
 
 def search_games(query, sort_order='desc'):
     endpoint = 'games'
-    query_string = f'fields id, name, cover.url, cover.image_id, genres.name, involved_companies.company.name, rating; where name ~ *"{query}"*; sort rating {sort_order}; limit 50;'
+    query_string = f'''
+    fields id, name, cover.url, cover.image_id, genres.name, 
+           involved_companies.company.name, involved_companies.developer, 
+           involved_companies.publisher, platforms.name, rating; 
+    where name ~ *"{query}"*; 
+    sort rating {sort_order}; 
+    limit 50;
+    '''
     response = igdb_api_request(endpoint, query_string)
 
     games = []
@@ -39,24 +46,27 @@ def search_games(query, sort_order='desc'):
         if 'id' not in game:
             continue
         
-        # Constructing a higher quality cover URL
         image_id = game.get('cover', {}).get('image_id', '')
         cover_url = f"https://images.igdb.com/igdb/image/upload/t_cover_big/{image_id}.jpg" if image_id else ''
-
         genres = [genre['name'] for genre in game.get('genres', []) if 'name' in genre]
-        companies = [company['company']['name'] for company in game.get('involved_companies', []) if 'company' in company and 'name' in company['company']]
-        rating = game.get('rating', 'Not Rated')
+        developers = [comp['company']['name'] for comp in game.get('involved_companies', []) if comp.get('developer', False)]
+        publishers = [comp['company']['name'] for comp in game.get('involved_companies', []) if comp.get('publisher', False)]
+        platforms = [platform['name'] for platform in game.get('platforms', []) if 'name' in platform]
+        rating = float(game.get('rating', 0))  # Ensuring rating is a float
 
         games.append({
             'id': game['id'],
             'name': game['name'],
             'cover': cover_url,
             'genres': genres,
-            'companies': companies,
-            'rating': rating  # Include rating in the result set
+            'developers': developers,
+            'publishers': publishers,
+            'platforms': platforms,
+            'rating': rating
         })
 
     return games
+
 
 
 
