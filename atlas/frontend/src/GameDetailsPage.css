@@ -1,16 +1,35 @@
+@keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+
 .game-details-page {
     display: flex;
     flex-direction: column;
     align-items: center;
+    animation: fadeInUp 1s ease 0s forwards;
   }
   
+  .game-details-page.hide {
+    opacity: 0;
+    transition: opacity 1s ease-in-out;
+  }
+
   .game-details-header {
     display: flex;
     align-items: center;
     margin-bottom: 20px;
   }
-  
+
   .game-cover-art {
+    padding-top: 5%;
     width: 100%;
     max-width: 300px;
     margin-right: 20px;
@@ -32,6 +51,19 @@
     font-weight: bold;
     margin-bottom: 10px;
     width: 100%;
+    box-sizing: border-box;
+    border: 1px solid;
+  }
+
+  #rating-box-2 {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    width: 150px;
     box-sizing: border-box;
     border: 1px solid;
   }

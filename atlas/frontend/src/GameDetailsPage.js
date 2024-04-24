@@ -55,14 +55,14 @@ const GameDetailsPage = () => {
     <div className="game-details-page">
       <div className="game-details-header">
         {gameDetails.cover && <img src={gameDetails.cover} alt={`${gameDetails.name} cover`} className="game-cover-art" />}
-        <h1 className="game-title">{gameDetails.name}</h1>
+        <h1 className="game-title"><i>{gameDetails.name}</i></h1>
       </div>
       <div className="game-details-content">
         <p><strong>Release Date:</strong> {gameDetails.first_release_date}</p>
         <p><strong>Genre:</strong> {gameDetails.genres}</p>
         <p><strong>Platforms:</strong> {gameDetails.platforms}</p>
         <p><strong>Summary:</strong> {gameDetails.summary}</p>
-        <div className={`rating-box ${getRatingClass(gameDetails.rating)}`}>
+        <div className={`rating-box ${getRatingClass(gameDetails.rating)}`} id="rating-box-2">
           <strong>Rating:</strong> {gameDetails.rating ? gameDetails.rating.toFixed(2) : 'Not Rated'}
         </div>
       </div>
@@ -76,7 +76,6 @@ const GameDetailsPage = () => {
                 width="300"
                 height="169"
                 src={`https://www.youtube.com/embed/${video.videoId}`}
-                frameBorder="0"
                 allowFullScreen
               ></iframe>
             </div>
@@ -104,5 +103,7 @@ function getRatingClass(rating) {
       return '';
   }
 }
+
+
 
 export default GameDetailsPage;
