@@ -14,7 +14,7 @@ const GameDetailsPage = () => {
         const details = response.data;
         
         // Format the release date
-        const releaseDate = details.first_release_date ? new Date(details.first_release_date).toLocaleDateString() : 'No release date';
+        const releaseDate = details.first_release_date ? new Date(details.first_release_date * 1000).toLocaleDateString() : 'No release date';
 
         // Extract the genre and platform names
         const genres = details.genres ? details.genres.map(genre => genre.name).join(', ') : 'No genres listed';
