@@ -15,6 +15,8 @@
     flex-direction: column;
     align-items: center;
     animation: fadeInUp 1s ease 0s forwards;
+    background-color: rgb(16, 16, 16);
+    color: rgb(215, 215, 215);
   }
   
   .game-details-page.hide {
@@ -29,14 +31,14 @@
   }
 
   .game-cover-art {
-    padding-top: 5%;
+    margin-top: 5%;
     width: 100%;
     max-width: 300px;
     margin-right: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.833);
   }
   
   .game-details-content {
-    background-color: #f0f0f0;
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -87,7 +89,7 @@
     position: relative;
     padding-top: 180px;
     padding-left: 330px;
-
+    border: 1px solid rgba(255, 255, 255, 0.833);
     overflow: hidden;
   }
 
