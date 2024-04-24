@@ -23,23 +23,15 @@ def validate_password(request):
 @api_view(['GET'])
 def search_games_view(request):
     query = request.GET.get('query', '')
-    page = int(request.GET.get('page', 1))
-    games_per_page = 20
-    sort_order = request.GET.get('sort', 'desc')  # You can also allow sorting to be controlled via parameters
-
-    games = search_games(query, page, games_per_page, sort_order)
-    if not games['results']:
-        return Response({'message': 'No results found'}, status=status.HTTP_404_NOT_FOUND)
-    return Response(games)
+    sort_order = request.GET.get('sort', 'desc') 
+    games = search_games(query, sort_order)
+    return Response({'results': games})
 
 
-def search_games(query, page=1, games_per_page=20, sort_order='desc'):
-    offset = (page - 1) * games_per_page
-    limit = games_per_page
 
+def search_games(query, sort_order='desc'):
     endpoint = 'games'
-    # Update the cover.url to fetch a better quality image
-    query_string = f'fields id, name, cover.url, cover.image_id, genres.name, involved_companies.company.name, rating; where name ~ *"{query}"*; sort rating {sort_order}; limit {limit}; offset {offset};'
+    query_string = f'fields id, name, cover.url, cover.image_id, genres.name, involved_companies.company.name, rating; where name ~ *"{query}"*; sort rating {sort_order}; limit 50;'
     response = igdb_api_request(endpoint, query_string)
 
     games = []
@@ -61,14 +53,10 @@ def search_games(query, page=1, games_per_page=20, sort_order='desc'):
             'cover': cover_url,
             'genres': genres,
             'companies': companies,
-            'rating': rating
+            'rating': rating  # Include rating in the result set
         })
 
-    return {
-        'count': len(response),
-        'results': games,
-    }
-
+    return games
 
 
 
