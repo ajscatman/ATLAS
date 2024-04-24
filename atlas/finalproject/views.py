@@ -80,7 +80,7 @@ def search_games(query, search_type='title'):
 
 def game_details_view(request, game_id):
     endpoint = 'games'
-    query = f'fields name, first_release_date, genres.name, platforms.name, summary, cover.url, rating; where id = {game_id};'
+    query = f'fields name, first_release_date, genres.name, platforms.name, summary, cover.url, rating, videos.video_id, websites.url; where id = {game_id};'
     response = igdb_api_request(endpoint, query)
 
     if response:

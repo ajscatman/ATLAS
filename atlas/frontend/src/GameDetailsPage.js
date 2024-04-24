@@ -20,8 +20,15 @@ const GameDetailsPage = () => {
         const genres = details.genres ? details.genres.map(genre => genre.name).join(', ') : 'No genres listed';
         const platforms = details.platforms ? details.platforms.map(platform => platform.name).join(', ') : 'No platforms listed';
 
-        // Use 'summary' instead of 'description' based on the API
         const summary = details.summary || 'No summary available.';
+
+        const videos = details.videos ? details.videos.map(video => ({
+          videoId: video.video_id
+        })) : [];
+    
+        const websites = details.websites ? details.websites.map(site => ({
+          url: site.url
+        })) : [];
 
         setGameDetails({
           ...details,
@@ -29,6 +36,8 @@ const GameDetailsPage = () => {
           genres,
           platforms,
           summary,
+          videos,
+          websites,
         });
       } catch (error) {
         console.error('Error fetching game details:', error);
@@ -51,7 +60,35 @@ const GameDetailsPage = () => {
       <p><strong>Platforms:</strong> {gameDetails.platforms}</p>
       <p><strong>Summary:</strong> {gameDetails.summary}</p>
       <div className={`rating-box ${getRatingClass(gameDetails.rating)}`}>
-        <strong>Rating:</strong> {gameDetails.rating ? gameDetails.rating.toFixed(2) : 'Not Rated'}
+        <strong>Rating:</strong> {gameDetails.rating ? gameDetails.rating.toFixed(2):'Not Rated'}
+      </div>
+
+      {/* Render videos */}
+      <div className="game-videos">
+        <h2>Videos</h2>
+        {gameDetails.videos.map((video, index) => (
+          <div key={index}>
+            <iframe
+              width="560"
+              height="315"
+              src={`https://www.youtube.com/embed/${video.videoId}`}
+              title={`Game Video ${index + 1}`}
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            ></iframe>
+          </div>
+        ))}
+      </div>
+
+      {/* Render websites */}
+      <div className="game-websites">
+        <h2>Websites</h2>
+        {gameDetails.websites.map((site, index) => (
+          <div key={index}>
+            <a href={site.url} target="_blank" rel="noopener noreferrer">{site.url}</a>
+          </div>
+        ))}
       </div>
     </div>
   );
