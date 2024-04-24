@@ -14,7 +14,12 @@ def igdb_api_request(endpoint, query):
     }
     data = query.encode('utf-8')
     response = requests.post(url, headers=headers, data=data)
-    return response.json()
+    response_json = response.json()
+
+    # Log the raw API response to help with debugging
+    print(f"API Response for {query}: {response_json}")
+
+    return response_json
 
 def search_games(query, page=1, games_per_page=20):
     offset = (page - 1) * games_per_page
