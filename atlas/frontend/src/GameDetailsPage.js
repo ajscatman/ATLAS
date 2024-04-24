@@ -53,41 +53,40 @@ const GameDetailsPage = () => {
 
   return (
     <div className="game-details-page">
-      {gameDetails.cover && <img src={gameDetails.cover} alt={`${gameDetails.name} cover`} className="game-cover-art" />}
-      <h1 className="game-title">{gameDetails.name}</h1>
-      <p><strong>Release Date:</strong> {gameDetails.first_release_date}</p>
-      <p><strong>Genre:</strong> {gameDetails.genres}</p>
-      <p><strong>Platforms:</strong> {gameDetails.platforms}</p>
-      <p><strong>Summary:</strong> {gameDetails.summary}</p>
-      <div className={`rating-box ${getRatingClass(gameDetails.rating)}`}>
-        <strong>Rating:</strong> {gameDetails.rating ? gameDetails.rating.toFixed(2):'Not Rated'}
+      <div className="game-details-header">
+        {gameDetails.cover && <img src={gameDetails.cover} alt={`${gameDetails.name} cover`} className="game-cover-art" />}
+        <h1 className="game-title">{gameDetails.name}</h1>
       </div>
-
-      {/* Render videos */}
+      <div className="game-details-content">
+        <p><strong>Release Date:</strong> {gameDetails.first_release_date}</p>
+        <p><strong>Genre:</strong> {gameDetails.genres}</p>
+        <p><strong>Platforms:</strong> {gameDetails.platforms}</p>
+        <p><strong>Summary:</strong> {gameDetails.summary}</p>
+        <div className={`rating-box ${getRatingClass(gameDetails.rating)}`}>
+          <strong>Rating:</strong> {gameDetails.rating ? gameDetails.rating.toFixed(2) : 'Not Rated'}
+        </div>
+      </div>
       <div className="game-videos">
         <h2>Videos</h2>
-        {gameDetails.videos.map((video, index) => (
-          <div key={index}>
-            <iframe
-              width="560"
-              height="315"
-              src={`https://www.youtube.com/embed/${video.videoId}`}
-              title={`Game Video ${index + 1}`}
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            ></iframe>
-          </div>
-        ))}
+        <div className="video-grid">
+          {gameDetails.videos.map((video, index) => (
+            <div key={index} className="video-item">
+              <iframe
+                title={`Video ${index}`}
+                width="300"
+                height="169"
+                src={`https://www.youtube.com/embed/${video.videoId}`}
+                frameBorder="0"
+                allowFullScreen
+              ></iframe>
+            </div>
+          ))}
+        </div>
       </div>
-
-      {/* Render websites */}
       <div className="game-websites">
         <h2>Websites</h2>
-        {gameDetails.websites.map((site, index) => (
-          <div key={index}>
-            <a href={site.url} target="_blank" rel="noopener noreferrer">{site.url}</a>
-          </div>
+        {gameDetails.websites.map((website, index) => (
+          <a key={index} href={website.url} target="_blank" rel="noopener noreferrer">{website.url}</a>
         ))}
       </div>
     </div>
