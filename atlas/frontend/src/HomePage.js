@@ -24,7 +24,8 @@ const HomePage = () => {
 
   return (
     <div className="home-page">
-      <h1 className="animated-element">Welcome to the Home Page</h1>
+      <h1 className="animated-element">Welcome to ATLAS.</h1>
+      <h4 className="animated-element">Search for your favourite games across our database and build your personalised collection.</h4>
       <div className="search-type-buttons animated-element">
         <button onClick={() => setSearchType('title')} className={searchType === 'title' ? 'active' : ''}>Title</button>
         <button onClick={() => setSearchType('developer')} className={searchType === 'developer' ? 'active' : ''}>Developer</button>
