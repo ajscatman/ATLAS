@@ -36,7 +36,9 @@ const HomePage = () => {
         {searchResults.map((game) => (
           <div key={game.id} className="game-card">
             <img src={game.cover} alt={game.name} />
+            <div style={{'min-height': 70+'px'}}>
             <h3>{game.name}</h3>
+            </div>
             <div className={`rating-box ${getRatingClass(game.rating)}`}>
               Rating: {typeof game.rating === 'number' ? game.rating.toFixed(2) : 'Not Rated'}
             </div>
