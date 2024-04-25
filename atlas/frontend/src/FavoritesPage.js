@@ -30,18 +30,13 @@ const FavoritesPage = () => {
 
   return (
     <div className="favorites-page">
-      <h1 className="favorites-heading animated-element">My Favorites</h1>
-      <div className="game-grid">
+      <h1 className="favorites-heading">My Favorites</h1>
+      <div className="favorites-grid">
         {favorites.map((game) => (
-          <div key={game.id} className="game-card animated-element" onClick={() => showGameDetails(game.id)}>
+          <div key={game.id} className="favorite-card" onClick={() => showGameDetails(game.id)}>
             <img src={game.cover.url} alt={game.name} />
-            <div>
-              <h3>{game.name}</h3>
-              <div className={`rating-box ${getRatingClass(game.rating)}`}>
-                Rating: {game.rating ? game.rating.toFixed(2) : 'Not Rated'}
-              </div>
-            </div>
-          </div>
+            <h3>{game.name}</h3>
+        </div>
         ))}
       </div>
     </div>
