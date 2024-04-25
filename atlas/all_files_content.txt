@@ -407,7 +407,7 @@ Filename: C:\Users\maman\Desktop\ATLAS\atlas\finalproject\urls.py
 from django.urls import path
 from .views import UserRegistrationView, UserLoginView, UserProfileView, validate_password, igdb_oauth_callback, \
     search_games_view, game_details_view, toggle_favorite, check_favorite, get_favorites, CollectionGameListCreateView, \
-    CollectionGameRetrieveUpdateDestroyView, CollectionListCreateView, CollectionRetrieveUpdateDestroyView, get_games_by_ids
+    CollectionGameRetrieveUpdateDestroyView, CollectionListCreateView, CollectionRetrieveUpdateDestroyView, get_games_by_ids, CollectionGameViewSet
 
 urlpatterns = [
     path('register/', UserRegistrationView.as_view(), name='user-registration'),
@@ -424,6 +424,7 @@ urlpatterns = [
     path('collections/<int:pk>/', CollectionRetrieveUpdateDestroyView.as_view(), name='collection-retrieve-update-destroy'),
     path('collections/<int:collection_id>/games/', CollectionGameListCreateView.as_view(), name='collection-game-list-create'),
     path('collections/<int:collection_id>/games/<int:pk>/', CollectionGameRetrieveUpdateDestroyView.as_view(), name='collection-game-retrieve-update-destroy'),
+    path('collections/<int:collection_id>/games/reorder/', CollectionGameViewSet.as_view({'put': 'reorder'}), name='collection-game-reorder'),
     path('games/', get_games_by_ids, name='get-games-by-ids'),
 ]
 
@@ -432,8 +433,8 @@ Filename: C:\Users\maman\Desktop\ATLAS\atlas\finalproject\views.py
 from django.shortcuts import render, redirect
 from django.conf import settings
 from django.http import JsonResponse
-from rest_framework import generics, status, permissions
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework import generics, status, permissions, viewsets
+from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -480,8 +481,20 @@ class CollectionGameRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIV
         collection_id = self.kwargs['collection_id']
         return CollectionGame.objects.filter(collection_id=collection_id)
     
+class CollectionGameViewSet(viewsets.ModelViewSet):
+    @action(detail=False, methods=['put'])
+    def reorder(self, request, collection_id):
+        collection = get_object_or_404(Collection, id=collection_id, user=request.user)
+        games = request.data.get('games', [])
 
+        for game_data in games:
+            game_id = game_data.get('id')
+            order = game_data.get('order')
+            game = get_object_or_404(CollectionGame, id=game_id, collection=collection)
+            game.order = order
+            game.save()
 
+        return Response({'message': 'Games reordered successfully.'})
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -877,6 +890,8 @@ const CollectionDetailsPage = () => {
   const [collection, setCollection] = useState(null);
   const [games, setGames] = useState([]);
   const navigate = useNavigate();
+  const [isDragging, setIsDragging] = useState(false);
+  const [draggedGame, setDraggedGame] = useState(null);
 
   useEffect(() => {
     fetchCollectionDetails();
@@ -925,6 +940,40 @@ const CollectionDetailsPage = () => {
       navigate('/collections');
     } catch (error) {
       console.error('Error deleting collection:', error);
+    }
+  };
+
+  const handleDragStart = (game) => {
+    setIsDragging(true);
+    setDraggedGame(game);
+  };
+  
+  const handleDragOver = (e, game) => {
+    e.preventDefault();
+    if (draggedGame !== game) {
+      const updatedGames = [...games];
+      const draggedIndex = updatedGames.findIndex((g) => g.id === draggedGame.id);
+      const targetIndex = updatedGames.findIndex((g) => g.id === game.id);
+      updatedGames.splice(draggedIndex, 1);
+      updatedGames.splice(targetIndex, 0, draggedGame);
+      setGames(updatedGames);
+    }
+  };
+  
+  const handleDragEnd = async () => {
+    setIsDragging(false);
+    setDraggedGame(null);
+  
+    try {
+      await axios.put(`http://localhost:8000/api/collections/${collectionId}/games/reorder/`, {
+        games: games.map((game, index) => ({ id: game.id, order: index })),
+      }, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+        },
+      });
+    } catch (error) {
+      console.error('Error reordering games:', error);
     }
   };
 
@@ -1535,11 +1584,35 @@ const GameDetailsPage = () => {
         isOpen={isCollectionModalOpen}
         onRequestClose={closeCollectionModal}
         contentLabel="Add to Collection"
+        style={{
+          content: {
+            top: '50%',
+            left: '50%',
+            right: 'auto',
+            bottom: 'auto',
+            marginRight: '-50%',
+            transform: 'translate(-50%, -50%)',
+            backgroundColor: '#fff',
+            borderRadius: '8px',
+            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+            padding: '20px',
+          },
+          overlay: {
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          },
+        }}
       >
         <h2>Add to Collection</h2>
         <select
           value={selectedCollectionId}
           onChange={(e) => setSelectedCollectionId(e.target.value)}
+          style={{
+            width: '100%',
+            padding: '10px',
+            marginBottom: '10px',
+            border: '1px solid #ccc',
+            borderRadius: '4px',
+          }}
         >
           <option value="">Select Collection</option>
           {userCollections.map((collection) => (
@@ -1553,14 +1626,30 @@ const GameDetailsPage = () => {
           placeholder="New Collection Title"
           value={newCollectionTitle}
           onChange={(e) => setNewCollectionTitle(e.target.value)}
+          style={{
+            width: '100%',
+            padding: '10px',
+            marginBottom: '10px',
+            border: '1px solid #ccc',
+            borderRadius: '4px',
+          }}
         />
         <textarea
           placeholder="New Collection Description"
           value={newCollectionDescription}
           onChange={(e) => setNewCollectionDescription(e.target.value)}
+          style={{
+            width: '100%',
+            padding: '10px',
+            marginBottom: '10px',
+            border: '1px solid #ccc',
+            borderRadius: '4px',
+          }}
         ></textarea>
-        <button onClick={addToCollection}>Add</button>
-        <button onClick={closeCollectionModal}>Cancel</button>
+        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <button onClick={addToCollection} style={{ marginRight: '10px' }}>Add</button>
+          <button onClick={closeCollectionModal}>Cancel</button>
+        </div>
       </Modal>
       <div className="game-videos">
         <h2>Videos</h2>

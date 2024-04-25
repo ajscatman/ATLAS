@@ -65,7 +65,7 @@ const CollectionDetailsPage = () => {
     setIsDragging(true);
     setDraggedGame(game);
   };
-  
+
   const handleDragOver = (e, game) => {
     e.preventDefault();
     if (draggedGame !== game) {
@@ -77,19 +77,23 @@ const CollectionDetailsPage = () => {
       setGames(updatedGames);
     }
   };
-  
+
   const handleDragEnd = async () => {
     setIsDragging(false);
     setDraggedGame(null);
-  
+
     try {
-      await axios.put(`http://localhost:8000/api/collections/${collectionId}/games/reorder/`, {
-        games: games.map((game, index) => ({ id: game.id, order: index })),
-      }, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+      await axios.put(
+        `http://localhost:8000/api/collections/${collectionId}/games/reorder/`,
+        {
+          games: games.map((game, index) => ({ id: game.id, order: index })),
         },
-      });
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+          },
+        }
+      );
     } catch (error) {
       console.error('Error reordering games:', error);
     }
@@ -100,14 +104,23 @@ const CollectionDetailsPage = () => {
   }
 
   return (
-    <div>
-      <h1>{collection.title}</h1>
-      <p>{collection.description}</p>
-      <button onClick={deleteCollection}>Delete Collection</button>
+    <div className="collection-details-page">
+      <h1 className="collection-title">{collection.title}</h1>
+      <p className="collection-description">{collection.description}</p>
+      <button onClick={deleteCollection} className="delete-button">
+        Delete Collection
+      </button>
       <h2>Games</h2>
-      <ul>
+      <ul className="game-list">
         {games.map((game) => (
-          <li key={game.id}>
+          <li
+            key={game.id}
+            className="game-item"
+            draggable
+            onDragStart={() => handleDragStart(game)}
+            onDragOver={(e) => handleDragOver(e, game)}
+            onDragEnd={handleDragEnd}
+          >
             <img src={game.cover} alt={game.name} />
             <h3>{game.name}</h3>
             <p>{game.summary}</p>
@@ -116,7 +129,6 @@ const CollectionDetailsPage = () => {
             </div>
             <p>Genres: {game.genres}</p>
             <p>Platforms: {game.platforms}</p>
-            {/* Add more game details as needed */}
           </li>
         ))}
       </ul>
