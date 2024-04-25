@@ -8,8 +8,6 @@ const CollectionDetailsPage = () => {
   const [collection, setCollection] = useState(null);
   const [games, setGames] = useState([]);
   const navigate = useNavigate();
-  const [isDragging, setIsDragging] = useState(false);
-  const [draggedGame, setDraggedGame] = useState(null);
 
   useEffect(() => {
     fetchCollectionDetails();
@@ -61,66 +59,19 @@ const CollectionDetailsPage = () => {
     }
   };
 
-  const handleDragStart = (game) => {
-    setIsDragging(true);
-    setDraggedGame(game);
-  };
-
-  const handleDragOver = (e, game) => {
-    e.preventDefault();
-    if (draggedGame !== game) {
-      const updatedGames = [...games];
-      const draggedIndex = updatedGames.findIndex((g) => g.id === draggedGame.id);
-      const targetIndex = updatedGames.findIndex((g) => g.id === game.id);
-      updatedGames.splice(draggedIndex, 1);
-      updatedGames.splice(targetIndex, 0, draggedGame);
-      setGames(updatedGames);
-    }
-  };
-
-  const handleDragEnd = async () => {
-    setIsDragging(false);
-    setDraggedGame(null);
-
-    try {
-      await axios.put(
-        `http://localhost:8000/api/collections/${collectionId}/games/reorder/`,
-        {
-          games: games.map((game, index) => ({ id: game.id, order: index })),
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
-          },
-        }
-      );
-    } catch (error) {
-      console.error('Error reordering games:', error);
-    }
-  };
-
   if (!collection) {
     return <div>Loading...</div>;
   }
 
   return (
-    <div className="collection-details-page">
-      <h1 className="collection-title">{collection.title}</h1>
-      <p className="collection-description">{collection.description}</p>
-      <button onClick={deleteCollection} className="delete-button">
-        Delete Collection
-      </button>
+    <div>
+      <h1>{collection.title}</h1>
+      <p>{collection.description}</p>
+      <button onClick={deleteCollection}>Delete Collection</button>
       <h2>Games</h2>
-      <ul className="game-list">
+      <ul>
         {games.map((game) => (
-          <li
-            key={game.id}
-            className="game-item"
-            draggable
-            onDragStart={() => handleDragStart(game)}
-            onDragOver={(e) => handleDragOver(e, game)}
-            onDragEnd={handleDragEnd}
-          >
+          <li key={game.id}>
             <img src={game.cover} alt={game.name} />
             <h3>{game.name}</h3>
             <p>{game.summary}</p>

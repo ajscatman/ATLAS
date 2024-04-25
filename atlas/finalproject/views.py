@@ -1,8 +1,8 @@
 from django.shortcuts import render, redirect
 from django.conf import settings
 from django.http import JsonResponse
-from rest_framework import generics, status, permissions, viewsets
-from rest_framework.decorators import api_view, permission_classes, action
+from rest_framework import generics, status, permissions
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -48,21 +48,6 @@ class CollectionGameRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIV
     def get_queryset(self):
         collection_id = self.kwargs['collection_id']
         return CollectionGame.objects.filter(collection_id=collection_id)
-    
-class CollectionGameViewSet(viewsets.ModelViewSet):
-    @action(detail=False, methods=['put'])
-    def reorder(self, request, collection_id):
-        collection = get_object_or_404(Collection, id=collection_id, user=request.user)
-        games = request.data.get('games', [])
-
-        for game_data in games:
-            game_id = game_data.get('id')
-            order = game_data.get('order')
-            game = get_object_or_404(CollectionGame, id=game_id, collection=collection)
-            game.order = order
-            game.save()
-
-        return Response({'message': 'Games reordered successfully.'})
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])

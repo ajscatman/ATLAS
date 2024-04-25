@@ -24,12 +24,14 @@ const CollectionsPage = () => {
   };
 
   return (
-    <div>
-      <h1>My Collections</h1>
-      <ul>
+    <div className="collections-page">
+      <h1 className="collections-heading">My Collections</h1>
+      <ul className="collection-list">
         {collections.map((collection) => (
-          <li key={collection.id}>
-            <Link to={`/collections/${collection.id}`}>{collection.title}</Link>
+          <li key={collection.id} className="collection-item">
+            <Link to={`/collections/${collection.id}`} className="collection-link">
+              {collection.title}
+            </Link>
           </li>
         ))}
       </ul>

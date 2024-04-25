@@ -407,7 +407,7 @@ Filename: C:\Users\maman\Desktop\ATLAS\atlas\finalproject\urls.py
 from django.urls import path
 from .views import UserRegistrationView, UserLoginView, UserProfileView, validate_password, igdb_oauth_callback, \
     search_games_view, game_details_view, toggle_favorite, check_favorite, get_favorites, CollectionGameListCreateView, \
-    CollectionGameRetrieveUpdateDestroyView, CollectionListCreateView, CollectionRetrieveUpdateDestroyView, get_games_by_ids, CollectionGameViewSet
+    CollectionGameRetrieveUpdateDestroyView, CollectionListCreateView, CollectionRetrieveUpdateDestroyView, get_games_by_ids
 
 urlpatterns = [
     path('register/', UserRegistrationView.as_view(), name='user-registration'),
@@ -424,7 +424,6 @@ urlpatterns = [
     path('collections/<int:pk>/', CollectionRetrieveUpdateDestroyView.as_view(), name='collection-retrieve-update-destroy'),
     path('collections/<int:collection_id>/games/', CollectionGameListCreateView.as_view(), name='collection-game-list-create'),
     path('collections/<int:collection_id>/games/<int:pk>/', CollectionGameRetrieveUpdateDestroyView.as_view(), name='collection-game-retrieve-update-destroy'),
-    path('collections/<int:collection_id>/games/reorder/', CollectionGameViewSet.as_view({'put': 'reorder'}), name='collection-game-reorder'),
     path('games/', get_games_by_ids, name='get-games-by-ids'),
 ]
 
@@ -433,8 +432,8 @@ Filename: C:\Users\maman\Desktop\ATLAS\atlas\finalproject\views.py
 from django.shortcuts import render, redirect
 from django.conf import settings
 from django.http import JsonResponse
-from rest_framework import generics, status, permissions, viewsets
-from rest_framework.decorators import api_view, permission_classes, action
+from rest_framework import generics, status, permissions
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -480,21 +479,6 @@ class CollectionGameRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIV
     def get_queryset(self):
         collection_id = self.kwargs['collection_id']
         return CollectionGame.objects.filter(collection_id=collection_id)
-    
-class CollectionGameViewSet(viewsets.ModelViewSet):
-    @action(detail=False, methods=['put'])
-    def reorder(self, request, collection_id):
-        collection = get_object_or_404(Collection, id=collection_id, user=request.user)
-        games = request.data.get('games', [])
-
-        for game_data in games:
-            game_id = game_data.get('id')
-            order = game_data.get('order')
-            game = get_object_or_404(CollectionGame, id=game_id, collection=collection)
-            game.order = order
-            game.save()
-
-        return Response({'message': 'Games reordered successfully.'})
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -890,8 +874,6 @@ const CollectionDetailsPage = () => {
   const [collection, setCollection] = useState(null);
   const [games, setGames] = useState([]);
   const navigate = useNavigate();
-  const [isDragging, setIsDragging] = useState(false);
-  const [draggedGame, setDraggedGame] = useState(null);
 
   useEffect(() => {
     fetchCollectionDetails();
@@ -940,40 +922,6 @@ const CollectionDetailsPage = () => {
       navigate('/collections');
     } catch (error) {
       console.error('Error deleting collection:', error);
-    }
-  };
-
-  const handleDragStart = (game) => {
-    setIsDragging(true);
-    setDraggedGame(game);
-  };
-  
-  const handleDragOver = (e, game) => {
-    e.preventDefault();
-    if (draggedGame !== game) {
-      const updatedGames = [...games];
-      const draggedIndex = updatedGames.findIndex((g) => g.id === draggedGame.id);
-      const targetIndex = updatedGames.findIndex((g) => g.id === game.id);
-      updatedGames.splice(draggedIndex, 1);
-      updatedGames.splice(targetIndex, 0, draggedGame);
-      setGames(updatedGames);
-    }
-  };
-  
-  const handleDragEnd = async () => {
-    setIsDragging(false);
-    setDraggedGame(null);
-  
-    try {
-      await axios.put(`http://localhost:8000/api/collections/${collectionId}/games/reorder/`, {
-        games: games.map((game, index) => ({ id: game.id, order: index })),
-      }, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
-        },
-      });
-    } catch (error) {
-      console.error('Error reordering games:', error);
     }
   };
 
