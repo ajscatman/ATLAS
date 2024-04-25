@@ -176,11 +176,35 @@ const GameDetailsPage = () => {
         isOpen={isCollectionModalOpen}
         onRequestClose={closeCollectionModal}
         contentLabel="Add to Collection"
+        style={{
+          content: {
+            top: '50%',
+            left: '50%',
+            right: 'auto',
+            bottom: 'auto',
+            marginRight: '-50%',
+            transform: 'translate(-50%, -50%)',
+            backgroundColor: '#fff',
+            borderRadius: '8px',
+            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+            padding: '20px',
+          },
+          overlay: {
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          },
+        }}
       >
         <h2>Add to Collection</h2>
         <select
           value={selectedCollectionId}
           onChange={(e) => setSelectedCollectionId(e.target.value)}
+          style={{
+            width: '100%',
+            padding: '10px',
+            marginBottom: '10px',
+            border: '1px solid #ccc',
+            borderRadius: '4px',
+          }}
         >
           <option value="">Select Collection</option>
           {userCollections.map((collection) => (
@@ -194,14 +218,30 @@ const GameDetailsPage = () => {
           placeholder="New Collection Title"
           value={newCollectionTitle}
           onChange={(e) => setNewCollectionTitle(e.target.value)}
+          style={{
+            width: '100%',
+            padding: '10px',
+            marginBottom: '10px',
+            border: '1px solid #ccc',
+            borderRadius: '4px',
+          }}
         />
         <textarea
           placeholder="New Collection Description"
           value={newCollectionDescription}
           onChange={(e) => setNewCollectionDescription(e.target.value)}
+          style={{
+            width: '100%',
+            padding: '10px',
+            marginBottom: '10px',
+            border: '1px solid #ccc',
+            borderRadius: '4px',
+          }}
         ></textarea>
-        <button onClick={addToCollection}>Add</button>
-        <button onClick={closeCollectionModal}>Cancel</button>
+        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <button onClick={addToCollection} style={{ marginRight: '10px' }}>Add</button>
+          <button onClick={closeCollectionModal}>Cancel</button>
+        </div>
       </Modal>
       <div className="game-videos">
         <h2>Videos</h2>

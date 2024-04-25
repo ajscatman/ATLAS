@@ -407,7 +407,7 @@ Filename: C:\Users\maman\Desktop\ATLAS\atlas\finalproject\urls.py
 from django.urls import path
 from .views import UserRegistrationView, UserLoginView, UserProfileView, validate_password, igdb_oauth_callback, \
     search_games_view, game_details_view, toggle_favorite, check_favorite, get_favorites, CollectionGameListCreateView, \
-    CollectionGameRetrieveUpdateDestroyView, CollectionListCreateView, CollectionRetrieveUpdateDestroyView
+    CollectionGameRetrieveUpdateDestroyView, CollectionListCreateView, CollectionRetrieveUpdateDestroyView, get_games_by_ids
 
 urlpatterns = [
     path('register/', UserRegistrationView.as_view(), name='user-registration'),
@@ -424,6 +424,7 @@ urlpatterns = [
     path('collections/<int:pk>/', CollectionRetrieveUpdateDestroyView.as_view(), name='collection-retrieve-update-destroy'),
     path('collections/<int:collection_id>/games/', CollectionGameListCreateView.as_view(), name='collection-game-list-create'),
     path('collections/<int:collection_id>/games/<int:pk>/', CollectionGameRetrieveUpdateDestroyView.as_view(), name='collection-game-retrieve-update-destroy'),
+    path('games/', get_games_by_ids, name='get-games-by-ids'),
 ]
 
 
@@ -439,7 +440,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from .serializers import UserRegistrationSerializer, UserLoginSerializer, UserProfileSerializer, CollectionSerializer, CollectionGameSerializer
 from .igdb_api import search_games, igdb_api_request
-from .models import Favorite
+from .models import Favorite, Collection, CollectionGame
 import requests
 
 class CollectionListCreateView(generics.ListCreateAPIView):
@@ -478,6 +479,9 @@ class CollectionGameRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIV
     def get_queryset(self):
         collection_id = self.kwargs['collection_id']
         return CollectionGame.objects.filter(collection_id=collection_id)
+    
+
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -595,6 +599,28 @@ def search_games(query, search_type='title'):
 
     return games
 
+@api_view(['GET'])
+def get_games_by_ids(request):
+    game_ids = request.GET.get('ids', '').split(',')
+    game_ids = [int(id) for id in game_ids if id.strip()]
+
+    if not game_ids:
+        return Response({'error': 'No game IDs provided.'}, status=400)
+
+    endpoint = 'games'
+    query = f'fields name, cover.url, rating, summary, genres.name, platforms.name; where id = ({",".join(str(game_id) for game_id in game_ids)}); limit 50;'
+    games = igdb_api_request(endpoint, query)
+
+    for game in games:
+        cover_url = game.get('cover', {}).get('url', '')
+        if cover_url:
+            game['cover'] = cover_url.replace('t_thumb', 't_cover_big')
+        genres = ', '.join(genre['name'] for genre in game.get('genres', []))
+        game['genres'] = genres
+        platforms = ', '.join(platform['name'] for platform in game.get('platforms', []))
+        game['platforms'] = platforms
+
+    return Response(games)
 
 def game_details_view(request, game_id):
     endpoint = 'games'
@@ -768,8 +794,8 @@ const App = () => {
           <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
           <Route path="/game/:id" element={<ProtectedRoute><GameDetailsPage /></ProtectedRoute>} />
           <Route path="/favorites" element={<ProtectedRoute><FavoritesPage /></ProtectedRoute>} />
-          <Route path="/collections" exact component={CollectionsPage} />
-          <Route path="/collections/:collectionId" component={CollectionDetailsPage} />
+          <Route path="/collections" element={<ProtectedRoute><CollectionsPage /></ProtectedRoute>} />
+          <Route path="/collections/:collectionId" element={<ProtectedRoute><CollectionDetailsPage /></ProtectedRoute>} />
         </Routes>
         <ToastContainer />
       </div>
@@ -781,10 +807,70 @@ export default App;
 
 
 
+Filename: C:\Users\maman\Desktop\ATLAS\atlas\frontend\src\CollectionDetailsPage.css
+.collection-details-page {
+    padding: 20px;
+  }
+  
+  .collection-title {
+    font-size: 32px;
+    margin-bottom: 10px;
+  }
+  
+  .collection-description {
+    font-size: 18px;
+    margin-bottom: 20px;
+  }
+  
+  .delete-button {
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #f44336;
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-bottom: 20px;
+  }
+  
+  .game-list {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .game-item {
+    margin-bottom: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.833);
+    background-color: rgb(19, 19, 19);
+    color: rgb(223, 223, 223);
+    padding: 10px;
+    border-radius: 4px;
+  }
+  
+  .game-item img {
+    width: 100%;
+    max-width: 200px;
+    height: auto;
+    margin-bottom: 10px;
+    border: 3px solid rgba(255, 255, 255, 0.833);
+    border-radius: 4px;
+  }
+  
+  .game-item h3 {
+    font-size: 24px;
+    margin-bottom: 10px;
+  }
+  
+  .game-item p {
+    margin-bottom: 10px;
+  }
+
+
 Filename: C:\Users\maman\Desktop\ATLAS\atlas\frontend\src\CollectionDetailsPage.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
+import './CollectionDetailsPage.css';
 
 const CollectionDetailsPage = () => {
   const { collectionId } = useParams();
@@ -817,7 +903,13 @@ const CollectionDetailsPage = () => {
           Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
         },
       });
-      setGames(response.data);
+      const gameIds = response.data.map((game) => game.game_id);
+      const gameDetailsResponse = await axios.get(`http://localhost:8000/api/games/?ids=${gameIds.join(',')}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+        },
+      });
+      setGames(gameDetailsResponse.data);
     } catch (error) {
       console.error('Error fetching collection games:', error);
     }
@@ -849,7 +941,15 @@ const CollectionDetailsPage = () => {
       <ul>
         {games.map((game) => (
           <li key={game.id}>
-            {/* Display game details */}
+            <img src={game.cover} alt={game.name} />
+            <h3>{game.name}</h3>
+            <p>{game.summary}</p>
+            <div className={`rating-box ${getRatingClass(game.rating)}`}>
+              Rating: {game.rating ? game.rating.toFixed(2) : 'Not Rated'}
+            </div>
+            <p>Genres: {game.genres}</p>
+            <p>Platforms: {game.platforms}</p>
+            {/* Add more game details as needed */}
           </li>
         ))}
       </ul>
@@ -857,13 +957,59 @@ const CollectionDetailsPage = () => {
   );
 };
 
+function getRatingClass(rating) {
+  if (rating >= 70) {
+    return 'rating-green';
+  } else if (rating >= 40) {
+    return 'rating-orange';
+  } else if (rating < 40) {
+    return 'rating-red';
+  } else {
+    return '';
+  }
+}
+
 export default CollectionDetailsPage;
+
+
+Filename: C:\Users\maman\Desktop\ATLAS\atlas\frontend\src\CollectionsPage.css
+.collections-page {
+    text-align: center;
+    padding: 20px;
+  }
+  
+  .collections-heading {
+    font-size: 32px;
+    margin-bottom: 20px;
+    color: #000000;
+    text-decoration: underline;
+  }
+  
+  .collection-list {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .collection-item {
+    margin-bottom: 20px;
+  }
+  
+  .collection-link {
+    font-size: 24px;
+    color: #000000;
+    text-decoration: none;
+  }
+  
+  .collection-link:hover {
+    text-decoration: underline;
+  }
 
 
 Filename: C:\Users\maman\Desktop\ATLAS\atlas\frontend\src\CollectionsPage.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
+import './CollectionsPage.css';
 
 const CollectionsPage = () => {
   const [collections, setCollections] = useState([]);
@@ -1334,6 +1480,7 @@ const GameDetailsPage = () => {
           },
         });
         closeCollectionModal();
+        fetchUserCollections(); // Fetch updated collections after adding the game
       } catch (error) {
         console.error('Error adding game to collection:', error);
       }
@@ -1356,6 +1503,7 @@ const GameDetailsPage = () => {
           },
         });
         closeCollectionModal();
+        fetchUserCollections();
       } catch (error) {
         console.error('Error creating new collection:', error);
       }
@@ -1943,8 +2091,8 @@ const NavigationBar = () => {
           <ul className="navbar-nav ms-auto">
             {isAuthenticated ? (
               <>
-                <li>
-                  <Link to="/collections">Collections</Link>
+                <li className="nav-item">
+                  <Link to="/collections" className="nav-link">Collections</Link>
                 </li>
                 <li className="nav-item">
                   <Link to="/favorites" className="nav-link">Favorites</Link>

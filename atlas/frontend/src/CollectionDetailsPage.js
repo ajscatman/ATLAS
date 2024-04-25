@@ -8,6 +8,8 @@ const CollectionDetailsPage = () => {
   const [collection, setCollection] = useState(null);
   const [games, setGames] = useState([]);
   const navigate = useNavigate();
+  const [isDragging, setIsDragging] = useState(false);
+  const [draggedGame, setDraggedGame] = useState(null);
 
   useEffect(() => {
     fetchCollectionDetails();
@@ -56,6 +58,40 @@ const CollectionDetailsPage = () => {
       navigate('/collections');
     } catch (error) {
       console.error('Error deleting collection:', error);
+    }
+  };
+
+  const handleDragStart = (game) => {
+    setIsDragging(true);
+    setDraggedGame(game);
+  };
+  
+  const handleDragOver = (e, game) => {
+    e.preventDefault();
+    if (draggedGame !== game) {
+      const updatedGames = [...games];
+      const draggedIndex = updatedGames.findIndex((g) => g.id === draggedGame.id);
+      const targetIndex = updatedGames.findIndex((g) => g.id === game.id);
+      updatedGames.splice(draggedIndex, 1);
+      updatedGames.splice(targetIndex, 0, draggedGame);
+      setGames(updatedGames);
+    }
+  };
+  
+  const handleDragEnd = async () => {
+    setIsDragging(false);
+    setDraggedGame(null);
+  
+    try {
+      await axios.put(`http://localhost:8000/api/collections/${collectionId}/games/reorder/`, {
+        games: games.map((game, index) => ({ id: game.id, order: index })),
+      }, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+        },
+      });
+    } catch (error) {
+      console.error('Error reordering games:', error);
     }
   };
 
