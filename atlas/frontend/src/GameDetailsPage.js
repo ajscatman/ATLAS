@@ -1,23 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
+import Modal from 'react-modal';
 import './GameDetailsPage.css';
 
 const GameDetailsPage = () => {
   const { id } = useParams();
   const [gameDetails, setGameDetails] = useState(null);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [isCollectionModalOpen, setIsCollectionModalOpen] = useState(false);
+  const [userCollections, setUserCollections] = useState([]);
+  const [selectedCollectionId, setSelectedCollectionId] = useState('');
+  const [newCollectionTitle, setNewCollectionTitle] = useState('');
+  const [newCollectionDescription, setNewCollectionDescription] = useState('');
 
   useEffect(() => {
     fetchGameDetails();
     checkFavoriteStatus();
+    fetchUserCollections();
   }, [id]);
 
   const fetchGameDetails = async () => {
     try {
       const response = await axios.get(`http://localhost:8000/api/games/${id}/`);
       const details = response.data;
-      
+
       // Format the release date
       const releaseDate = details.first_release_date ? new Date(details.first_release_date * 1000).toLocaleDateString() : 'No release date';
 
@@ -30,7 +37,7 @@ const GameDetailsPage = () => {
       const videos = details.videos ? details.videos.map(video => ({
         videoId: video.video_id
       })) : [];
-  
+
       const websites = details.websites ? details.websites.map(site => ({
         url: site.url
       })) : [];
@@ -79,6 +86,71 @@ const GameDetailsPage = () => {
     }
   };
 
+  const fetchUserCollections = async () => {
+    try {
+      const response = await axios.get('http://localhost:8000/api/collections/', {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+        },
+      });
+      setUserCollections(response.data);
+    } catch (error) {
+      console.error('Error fetching user collections:', error);
+    }
+  };
+
+  const openCollectionModal = () => {
+    setIsCollectionModalOpen(true);
+  };
+
+  const closeCollectionModal = () => {
+    setIsCollectionModalOpen(false);
+    setSelectedCollectionId('');
+    setNewCollectionTitle('');
+    setNewCollectionDescription('');
+  };
+
+  const addToCollection = async () => {
+    if (selectedCollectionId) {
+      try {
+        await axios.post(`http://localhost:8000/api/collections/${selectedCollectionId}/games/`, {
+          game_id: gameDetails.id,
+        }, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+          },
+        });
+        closeCollectionModal();
+        fetchUserCollections(); // Fetch updated collections after adding the game
+      } catch (error) {
+        console.error('Error adding game to collection:', error);
+      }
+    } else if (newCollectionTitle) {
+      try {
+        const response = await axios.post('http://localhost:8000/api/collections/', {
+          title: newCollectionTitle,
+          description: newCollectionDescription,
+        }, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+          },
+        });
+        const newCollectionId = response.data.id;
+        await axios.post(`http://localhost:8000/api/collections/${newCollectionId}/games/`, {
+          game_id: gameDetails.id,
+        }, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+          },
+        });
+        closeCollectionModal();
+        fetchUserCollections();
+      } catch (error) {
+        console.error('Error creating new collection:', error);
+      }
+    }
+  };
+
   if (!gameDetails) {
     return <div>Loading game details...</div>;
   }
@@ -98,7 +170,39 @@ const GameDetailsPage = () => {
           <strong>Rating:</strong> {gameDetails.rating ? gameDetails.rating.toFixed(2) : 'Not Rated'}
         </div>
         <button onClick={toggleFavorite}>{isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}</button>
+        <button onClick={openCollectionModal}>Add to Collection</button>
       </div>
+      <Modal
+        isOpen={isCollectionModalOpen}
+        onRequestClose={closeCollectionModal}
+        contentLabel="Add to Collection"
+      >
+        <h2>Add to Collection</h2>
+        <select
+          value={selectedCollectionId}
+          onChange={(e) => setSelectedCollectionId(e.target.value)}
+        >
+          <option value="">Select Collection</option>
+          {userCollections.map((collection) => (
+            <option key={collection.id} value={collection.id}>
+              {collection.title}
+            </option>
+          ))}
+        </select>
+        <input
+          type="text"
+          placeholder="New Collection Title"
+          value={newCollectionTitle}
+          onChange={(e) => setNewCollectionTitle(e.target.value)}
+        />
+        <textarea
+          placeholder="New Collection Description"
+          value={newCollectionDescription}
+          onChange={(e) => setNewCollectionDescription(e.target.value)}
+        ></textarea>
+        <button onClick={addToCollection}>Add</button>
+        <button onClick={closeCollectionModal}>Cancel</button>
+      </Modal>
       <div className="game-videos">
         <h2>Videos</h2>
         <div className="video-grid">
@@ -127,13 +231,13 @@ const GameDetailsPage = () => {
 
 function getRatingClass(rating) {
   if (rating >= 70) {
-      return 'rating-green';
+    return 'rating-green';
   } else if (rating >= 40) {
-      return 'rating-orange';
+    return 'rating-orange';
   } else if (rating < 40) {
-      return 'rating-red';
+    return 'rating-red';
   } else {
-      return '';
+    return '';
   }
 }
 

@@ -1,5 +1,7 @@
 from django.urls import path
-from .views import UserRegistrationView, UserLoginView, UserProfileView, validate_password, igdb_oauth_callback, search_games_view, game_details_view, toggle_favorite, check_favorite, get_favorites
+from .views import UserRegistrationView, UserLoginView, UserProfileView, validate_password, igdb_oauth_callback, \
+    search_games_view, game_details_view, toggle_favorite, check_favorite, get_favorites, CollectionGameListCreateView, \
+    CollectionGameRetrieveUpdateDestroyView, CollectionListCreateView, CollectionRetrieveUpdateDestroyView, get_games_by_ids
 
 urlpatterns = [
     path('register/', UserRegistrationView.as_view(), name='user-registration'),
@@ -12,4 +14,9 @@ urlpatterns = [
     path('toggle-favorite/', toggle_favorite, name='toggle-favorite'),
     path('check-favorite/', check_favorite, name='check-favorite'),
     path('favorites/', get_favorites, name='get-favorites'),
+    path('collections/', CollectionListCreateView.as_view(), name='collection-list-create'),
+    path('collections/<int:pk>/', CollectionRetrieveUpdateDestroyView.as_view(), name='collection-retrieve-update-destroy'),
+    path('collections/<int:collection_id>/games/', CollectionGameListCreateView.as_view(), name='collection-game-list-create'),
+    path('collections/<int:collection_id>/games/<int:pk>/', CollectionGameRetrieveUpdateDestroyView.as_view(), name='collection-game-retrieve-update-destroy'),
+    path('games/', get_games_by_ids, name='get-games-by-ids'),
 ]

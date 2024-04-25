@@ -7,10 +7,50 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
-from .serializers import UserRegistrationSerializer, UserLoginSerializer, UserProfileSerializer
+from .serializers import UserRegistrationSerializer, UserLoginSerializer, UserProfileSerializer, CollectionSerializer, CollectionGameSerializer
 from .igdb_api import search_games, igdb_api_request
-from .models import Favorite
+from .models import Favorite, Collection, CollectionGame
 import requests
+
+class CollectionListCreateView(generics.ListCreateAPIView):
+    serializer_class = CollectionSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Collection.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+class CollectionRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = CollectionSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Collection.objects.filter(user=self.request.user)
+
+class CollectionGameListCreateView(generics.ListCreateAPIView):
+    serializer_class = CollectionGameSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        collection_id = self.kwargs['collection_id']
+        return CollectionGame.objects.filter(collection_id=collection_id)
+
+    def perform_create(self, serializer):
+        collection_id = self.kwargs['collection_id']
+        serializer.save(collection_id=collection_id)
+
+class CollectionGameRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = CollectionGameSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        collection_id = self.kwargs['collection_id']
+        return CollectionGame.objects.filter(collection_id=collection_id)
+    
+
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -128,6 +168,28 @@ def search_games(query, search_type='title'):
 
     return games
 
+@api_view(['GET'])
+def get_games_by_ids(request):
+    game_ids = request.GET.get('ids', '').split(',')
+    game_ids = [int(id) for id in game_ids if id.strip()]
+
+    if not game_ids:
+        return Response({'error': 'No game IDs provided.'}, status=400)
+
+    endpoint = 'games'
+    query = f'fields name, cover.url, rating, summary, genres.name, platforms.name; where id = ({",".join(str(game_id) for game_id in game_ids)}); limit 50;'
+    games = igdb_api_request(endpoint, query)
+
+    for game in games:
+        cover_url = game.get('cover', {}).get('url', '')
+        if cover_url:
+            game['cover'] = cover_url.replace('t_thumb', 't_cover_big')
+        genres = ', '.join(genre['name'] for genre in game.get('genres', []))
+        game['genres'] = genres
+        platforms = ', '.join(platform['name'] for platform in game.get('platforms', []))
+        game['platforms'] = platforms
+
+    return Response(games)
 
 def game_details_view(request, game_id):
     endpoint = 'games'

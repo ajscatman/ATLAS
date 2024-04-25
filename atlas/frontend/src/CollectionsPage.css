@@ -1,0 +1,30 @@
+.collections-page {
+    text-align: center;
+    padding: 20px;
+  }
+  
+  .collections-heading {
+    font-size: 32px;
+    margin-bottom: 20px;
+    color: #000000;
+    text-decoration: underline;
+  }
+  
+  .collection-list {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .collection-item {
+    margin-bottom: 20px;
+  }
+  
+  .collection-link {
+    font-size: 24px;
+    color: #000000;
+    text-decoration: none;
+  }
+  
+  .collection-link:hover {
+    text-decoration: underline;
+  }
