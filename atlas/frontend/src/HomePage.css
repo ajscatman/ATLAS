@@ -14,7 +14,7 @@
   animation: fadeInUp 1s ease 0s forwards;
 }
 button.active {
-    background-color: #4CAF50; /* Green background for the active button */
+    background-color: #212121;
     color: white;
   }
 
