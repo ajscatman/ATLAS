@@ -64,22 +64,21 @@ const CollectionDetailsPage = () => {
   }
 
   return (
-    <div>
-      <h1>{collection.title}</h1>
-      <p>{collection.description}</p>
-      <button onClick={deleteCollection}>Delete Collection</button>
-      <h2>Games</h2>
-      <ul>
+    <div className="collection-details-page">
+      <h1 className="collection-title">{collection.title}</h1>
+      <p className="collection-description">{collection.description}</p>
+      <button className="delete-button" onClick={deleteCollection}>Delete Collection</button>
+      <h2 className="games-heading">Games</h2>
+      <ul className="game-list">
         {games.map((game) => (
-          <li key={game.id}>
+          <li key={game.id} className="game-item">
             <img src={game.cover} alt={game.name} />
-            <h3>{game.name}</h3>
-            <p>{game.summary}</p>
-            <div className={`rating-box ${getRatingClass(game.rating)}`}>
-              Rating: {game.rating ? game.rating.toFixed(2) : 'Not Rated'}
+            <div className="game-details">
+              <h3>{game.name}</h3>
+              <p>{game.summary}</p>
+              <p>Genres: {game.genres}</p>
+              <p>Platforms: {game.platforms}</p>
             </div>
-            <p>Genres: {game.genres}</p>
-            <p>Platforms: {game.platforms}</p>
           </li>
         ))}
       </ul>

@@ -1,5 +1,6 @@
 .collection-details-page {
     padding: 20px;
+    text-align: center;
   }
   
   .collection-title {
@@ -23,6 +24,11 @@
     margin-bottom: 20px;
   }
   
+  .games-heading {
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+  
   .game-list {
     list-style-type: none;
     padding: 0;
@@ -35,13 +41,24 @@
     color: rgb(223, 223, 223);
     padding: 10px;
     border-radius: 4px;
+    display: flex;
+    align-items: center;
+    transition: transform 0.2s ease;
+  }
+
+  .game-item:hover {
+    transform: translateY(-5px);
+  }
+  
+  .game-details {
+    flex: 1;
+    text-align: left;
   }
   
   .game-item img {
-    width: 100%;
-    max-width: 200px;
+    width: 150px;
     height: auto;
-    margin-bottom: 10px;
+    margin-right: 20px;
     border: 3px solid rgba(255, 255, 255, 0.833);
     border-radius: 4px;
   }
