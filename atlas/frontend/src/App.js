@@ -11,6 +11,9 @@ import GameDetailsPage from './GameDetailsPage';
 import FavoritesPage from './FavoritesPage';
 import CollectionsPage from './CollectionsPage';
 import CollectionDetailsPage from './CollectionDetailsPage';
+import UsersPage from './UsersPage';
+import UserCollectionsPage from './UserCollectionsPage';
+
 
 const App = () => {
   const isAuthenticated = () => {
@@ -37,6 +40,8 @@ const App = () => {
           <Route path="/favorites" element={<ProtectedRoute><FavoritesPage /></ProtectedRoute>} />
           <Route path="/collections" element={<ProtectedRoute><CollectionsPage /></ProtectedRoute>} />
           <Route path="/collections/:collectionId" element={<ProtectedRoute><CollectionDetailsPage /></ProtectedRoute>} />
+          <Route path="/users" element={<ProtectedRoute><UsersPage /></ProtectedRoute>} />
+          <Route path="/users/:userId/collections" element={<ProtectedRoute><UserCollectionsPage /></ProtectedRoute>} />
         </Routes>
         <ToastContainer />
       </div>

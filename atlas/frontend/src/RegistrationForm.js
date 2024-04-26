@@ -16,7 +16,7 @@ const RegistrationForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:8000/api/register/', {
+      const response = await axios.post('http://localhost:8000/api/register/', {
         first_name: firstName,
         last_name: lastName,
         username: username,
@@ -24,9 +24,13 @@ const RegistrationForm = () => {
         password,
         password2,
       });
+      const { refresh, access, user } = response.data;
+      localStorage.setItem('refreshToken', refresh);
+      localStorage.setItem('accessToken', access);
+      localStorage.setItem('user', JSON.stringify(user));
       console.log('Registration successful');
       toast.success('Registration successful');
-      navigate('/login');
+      navigate('/home');
     } catch (error) {
       console.error('Registration error:', error.response);
       toast.error('Registration failed');

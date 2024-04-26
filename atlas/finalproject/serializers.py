@@ -52,11 +52,18 @@ class UserProfileSerializer(serializers.ModelSerializer):
         return user
     
 class CollectionSerializer(serializers.ModelSerializer):
+    user = serializers.ReadOnlyField(source='user.id')
+
     class Meta:
         model = Collection
-        fields = ['id', 'title', 'description']
+        fields = ['id', 'title', 'description', 'user']
 
 class CollectionGameSerializer(serializers.ModelSerializer):
     class Meta:
         model = CollectionGame
         fields = ['id', 'game_id', 'description', 'order']
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username']

@@ -1,0 +1,36 @@
+.users-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .search-bar {
+    display: flex;
+    margin-bottom: 20px;
+  }
+  
+  .search-bar input {
+    flex: 1;
+    padding: 10px;
+    font-size: 16px;
+  }
+  
+  .user-list {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .user-item {
+    border: 1px solid rgba(255, 255, 255, 0.833);
+    background-color: rgb(44, 44, 44);
+    color: rgb(223, 223, 223);
+    border-radius: 4px;
+    padding: 10px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  
+  .user-item:hover {
+    background-color: rgb(56, 56, 56);
+  }

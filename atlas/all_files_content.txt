@@ -393,21 +393,29 @@ class UserProfileSerializer(serializers.ModelSerializer):
         return user
     
 class CollectionSerializer(serializers.ModelSerializer):
+    user = serializers.ReadOnlyField(source='user.id')
+
     class Meta:
         model = Collection
-        fields = ['id', 'title', 'description']
+        fields = ['id', 'title', 'description', 'user']
 
 class CollectionGameSerializer(serializers.ModelSerializer):
     class Meta:
         model = CollectionGame
         fields = ['id', 'game_id', 'description', 'order']
 
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username']
+
 
 Filename: C:\Users\maman\Desktop\ATLAS\atlas\finalproject\urls.py
 from django.urls import path
 from .views import UserRegistrationView, UserLoginView, UserProfileView, validate_password, igdb_oauth_callback, \
     search_games_view, game_details_view, toggle_favorite, check_favorite, get_favorites, CollectionGameListCreateView, \
-    CollectionGameRetrieveUpdateDestroyView, CollectionListCreateView, CollectionRetrieveUpdateDestroyView, get_games_by_ids
+    CollectionGameRetrieveUpdateDestroyView, CollectionListCreateView, CollectionRetrieveUpdateDestroyView, get_games_by_ids, UserSearchView, \
+    UserCollectionsView, CollectionOwnershipCheck
 
 urlpatterns = [
     path('register/', UserRegistrationView.as_view(), name='user-registration'),
@@ -425,6 +433,9 @@ urlpatterns = [
     path('collections/<int:collection_id>/games/', CollectionGameListCreateView.as_view(), name='collection-game-list-create'),
     path('collections/<int:collection_id>/games/<int:pk>/', CollectionGameRetrieveUpdateDestroyView.as_view(), name='collection-game-retrieve-update-destroy'),
     path('games/', get_games_by_ids, name='get-games-by-ids'),
+    path('search-users/', UserSearchView.as_view(), name='search-users'),
+    path('users/<int:user_id>/collections/', UserCollectionsView.as_view(), name='user-collections'),
+    path('collections/<int:pk>/check-ownership/', CollectionOwnershipCheck.as_view(), name='collection-ownership-check'),
 ]
 
 
@@ -438,10 +449,25 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
-from .serializers import UserRegistrationSerializer, UserLoginSerializer, UserProfileSerializer, CollectionSerializer, CollectionGameSerializer
+from django.contrib.auth.models import User
+from .serializers import UserRegistrationSerializer, UserLoginSerializer, UserProfileSerializer, CollectionSerializer, CollectionGameSerializer, UserSerializer
 from .igdb_api import search_games, igdb_api_request
 from .models import Favorite, Collection, CollectionGame
 import requests
+
+class UserSearchView(generics.ListAPIView):
+    serializer_class = UserSerializer
+
+    def get_queryset(self):
+        query = self.request.GET.get('query', '')
+        return User.objects.filter(username__icontains=query)
+
+class UserCollectionsView(generics.ListAPIView):
+    serializer_class = CollectionSerializer
+
+    def get_queryset(self):
+        user_id = self.kwargs['user_id']
+        return Collection.objects.filter(user_id=user_id)
 
 class CollectionListCreateView(generics.ListCreateAPIView):
     serializer_class = CollectionSerializer
@@ -454,11 +480,15 @@ class CollectionListCreateView(generics.ListCreateAPIView):
         serializer.save(user=self.request.user)
 
 class CollectionRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Collection.objects.all()
     serializer_class = CollectionSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-    def get_queryset(self):
-        return Collection.objects.filter(user=self.request.user)
+    def get_object(self):
+        collection = super().get_object()
+        if collection.user != self.request.user:
+            self.permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+        return collection
 
 class CollectionGameListCreateView(generics.ListCreateAPIView):
     serializer_class = CollectionGameSerializer
@@ -466,11 +496,10 @@ class CollectionGameListCreateView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         collection_id = self.kwargs['collection_id']
+        collection = Collection.objects.get(id=collection_id)
+        if collection.user != self.request.user:
+            self.permission_classes = [permissions.IsAuthenticatedOrReadOnly]
         return CollectionGame.objects.filter(collection_id=collection_id)
-
-    def perform_create(self, serializer):
-        collection_id = self.kwargs['collection_id']
-        serializer.save(collection_id=collection_id)
 
 class CollectionGameRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = CollectionGameSerializer
@@ -479,6 +508,15 @@ class CollectionGameRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIV
     def get_queryset(self):
         collection_id = self.kwargs['collection_id']
         return CollectionGame.objects.filter(collection_id=collection_id)
+    
+class CollectionOwnershipCheck(generics.GenericAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        collection_id = self.kwargs['pk']
+        collection = Collection.objects.get(id=collection_id)
+        is_owner = collection.user == request.user
+        return Response({'is_owner': is_owner})
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -637,6 +675,7 @@ def game_details_view(request, game_id):
         return JsonResponse({'error': 'Game not found'}, status=404)
 
 
+
 def igdb_oauth_callback(request):
     # Extract the authorization code from the request parameters
     auth_code = request.GET.get('code')
@@ -674,6 +713,13 @@ class UserRegistrationView(generics.CreateAPIView):
             {
                 'refresh': str(refresh),
                 'access': str(refresh.access_token),
+                'user': {
+                    'id': user.id,
+                    'username': user.username,
+                    'email': user.email,
+                    'first_name': user.first_name,
+                    'last_name': user.last_name,
+                },
             },
             status=status.HTTP_201_CREATED
         )
@@ -767,6 +813,9 @@ import GameDetailsPage from './GameDetailsPage';
 import FavoritesPage from './FavoritesPage';
 import CollectionsPage from './CollectionsPage';
 import CollectionDetailsPage from './CollectionDetailsPage';
+import UsersPage from './UsersPage';
+import UserCollectionsPage from './UserCollectionsPage';
+
 
 const App = () => {
   const isAuthenticated = () => {
@@ -793,6 +842,8 @@ const App = () => {
           <Route path="/favorites" element={<ProtectedRoute><FavoritesPage /></ProtectedRoute>} />
           <Route path="/collections" element={<ProtectedRoute><CollectionsPage /></ProtectedRoute>} />
           <Route path="/collections/:collectionId" element={<ProtectedRoute><CollectionDetailsPage /></ProtectedRoute>} />
+          <Route path="/users" element={<ProtectedRoute><UsersPage /></ProtectedRoute>} />
+          <Route path="/users/:userId/collections" element={<ProtectedRoute><UserCollectionsPage /></ProtectedRoute>} />
         </Routes>
         <ToastContainer />
       </div>
@@ -899,10 +950,12 @@ const CollectionDetailsPage = () => {
   const [games, setGames] = useState([]);
   const navigate = useNavigate();
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isOwner, setIsOwner] = useState(false);
 
   useEffect(() => {
     fetchCollectionDetails();
     fetchCollectionGames();
+    checkCollectionOwnership();
   }, [collectionId]);
 
   const fetchCollectionDetails = async () => {
@@ -937,6 +990,19 @@ const CollectionDetailsPage = () => {
     }
   };
 
+  const checkCollectionOwnership = async () => {
+    try {
+      const response = await axios.get(`http://localhost:8000/api/collections/${collectionId}/check-ownership/`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+        },
+      });
+      setIsOwner(response.data.is_owner);
+    } catch (error) {
+      console.error('Error checking collection ownership:', error);
+    }
+  };
+
   const openDeleteModal = () => {
     setIsDeleteModalOpen(true);
   };
@@ -968,7 +1034,9 @@ const CollectionDetailsPage = () => {
     <div className="collection-details-page">
       <h1 className="collection-title">{collection.title}</h1>
       <p className="collection-description">{collection.description}</p>
-      <button className="delete-button" onClick={openDeleteModal}>Delete Collection</button>
+      {isOwner && (
+        <button className="delete-button" onClick={openDeleteModal}>Delete Collection</button>
+      )}
       <h2 className="games-heading">Games</h2>
       <ul className="game-list">
         {games.map((game) => (
@@ -1042,8 +1110,8 @@ Filename: C:\Users\maman\Desktop\ATLAS\atlas\frontend\src\CollectionsPage.css
   
   .collection-item {
     margin-bottom: 20px;
-    width: 300px;
-    background-color: #f1f1f1;
+    width: 1000px;
+    background-color: #cfcfcf;
     border-radius: 4px;
     padding: 20px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -1053,17 +1121,17 @@ Filename: C:\Users\maman\Desktop\ATLAS\atlas\frontend\src\CollectionsPage.css
   
   .collection-item:hover {
     transform: translateY(-5px);
-    background-color: rgb(207, 207, 207);
+    background-color: rgb(143, 143, 143);
   }
   
-  .collection-link {
-    font-size: 24px;
-    color: #000000;
+  .collection-item-link {
     text-decoration: none;
+    color: black;
+    font-style: italic;
   }
   
-  .collection-link:hover {
-    text-decoration: underline;
+  .collection-item-link:hover {
+    text-decoration: none;
   }
 
 
@@ -1096,6 +1164,7 @@ const CollectionsPage = () => {
   return (
     <div className="collections-page">
       <h1 className="collections-heading">My Collections</h1>
+      <h4>This is where your curated collections are stored.</h4>
       <ul className="collection-list">
         {collections.map((collection) => (
           <Link
@@ -1222,6 +1291,7 @@ const FavoritesPage = () => {
   return (
     <div className="favorites-page">
       <h1 className="favorites-heading">My Favorites</h1>
+      <h4 >Your own hall of fame where you keep your cherished titles.</h4>
       <div className="favorites-grid">
         {favorites.map((game) => (
           <div key={game.id} className="favorite-card" onClick={() => showGameDetails(game.id)}>
@@ -1265,7 +1335,7 @@ Filename: C:\Users\maman\Desktop\ATLAS\atlas\frontend\src\GameDetailsPage.css
 .add-to-favorites-button {
   padding: 10px 20px;
   font-size: 16px;
-  background-color: #007bff;
+  background-color: #414141;
   color: #ffffff;
   border: none;
   border-radius: 4px;
@@ -1275,7 +1345,7 @@ Filename: C:\Users\maman\Desktop\ATLAS\atlas\frontend\src\GameDetailsPage.css
 
 .add-to-collections-button:hover,
 .add-to-favorites-button:hover {
-  background-color: #0056b3;
+  background-color: #d1d1d1;
 }
 
 .game-details-page {
@@ -1284,8 +1354,9 @@ Filename: C:\Users\maman\Desktop\ATLAS\atlas\frontend\src\GameDetailsPage.css
     align-items: center;
     animation: fadeInUp 1s ease 0s forwards;
     background-color: rgb(16, 16, 16);
-    color: rgb(215, 215, 215);
+    color: rgb(186, 186, 186);
   }
+  
   
   .game-details-page.hide {
     opacity: 0;
@@ -1310,6 +1381,8 @@ Filename: C:\Users\maman\Desktop\ATLAS\atlas\frontend\src\GameDetailsPage.css
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    
+
   }
   
   .rating-box {
@@ -1374,14 +1447,22 @@ Filename: C:\Users\maman\Desktop\ATLAS\atlas\frontend\src\GameDetailsPage.css
   }
   
   .game-websites h2 {
-    font-size: 20px;
-    margin-bottom: 10px;
+    display: flex;
+    flex-direction: column; /* Stack children vertically */
+    align-items: center; /* Center items horizontally in the container */
+    text-align: center; /* Center text for all children */
+    width: 100%; /* Full width of the container */
+    max-width: 1200px; /* Max width to prevent excessive horizontal stretching */
+    margin: 0 auto; /* Center the entire block horizontally */
+    
   }
   
   .game-websites a {
-    display: block;
-    margin-bottom: 10px;
-    color: blue;
+    display: flex;
+    align-items: left; /* Center items horizontally in the container */
+    text-align: left; /* Center text for all children */
+    width: 100%; /* Full width of the container */
+    color: white;
   }
   
   .game-websites a:hover {
@@ -2037,6 +2118,7 @@ const LoginForm = () => {
       const { refresh, access } = response.data;
       localStorage.setItem('refreshToken', refresh);
       localStorage.setItem('accessToken', access);
+      localStorage.setItem('user', JSON.stringify(response.data.user));
 
       console.log('Login successful');
       toast.success('Login successful');
@@ -2180,6 +2262,9 @@ const NavigationBar = () => {
           <ul className="navbar-nav ms-auto">
             {isAuthenticated ? (
               <>
+                <li className="nav-item">
+                  <Link to="/users" className="nav-link">Users</Link>
+                </li>
                 <li className="nav-item">
                   <Link to="/collections" className="nav-link">Collections</Link>
                 </li>
@@ -2626,7 +2711,7 @@ const RegistrationForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:8000/api/register/', {
+      const response = await axios.post('http://localhost:8000/api/register/', {
         first_name: firstName,
         last_name: lastName,
         username: username,
@@ -2634,9 +2719,13 @@ const RegistrationForm = () => {
         password,
         password2,
       });
+      const { refresh, access, user } = response.data;
+      localStorage.setItem('refreshToken', refresh);
+      localStorage.setItem('accessToken', access);
+      localStorage.setItem('user', JSON.stringify(user));
       console.log('Registration successful');
       toast.success('Registration successful');
-      navigate('/login');
+      navigate('/home');
     } catch (error) {
       console.error('Registration error:', error.response);
       toast.error('Registration failed');
@@ -2710,5 +2799,184 @@ const RegistrationForm = () => {
 };
 
 export default RegistrationForm;
+
+
+Filename: C:\Users\maman\Desktop\ATLAS\atlas\frontend\src\UserCollectionsPage.css
+/* .user-collections-page {
+    text-align: center;
+    padding: 20px;
+  }
+  
+  .collection-list {
+    list-style-type: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .collection-item {
+    margin-bottom: 20px;
+    width: 300px;
+    background-color: #f1f1f1;
+    border-radius: 4px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease;
+    cursor: pointer;
+  }
+  
+  .collection-item:hover {
+    transform: translateY(-5px);
+    background-color: rgb(207, 207, 207);
+  }
+  
+  .collection-title {
+    font-size: 24px;
+    color: #000000;
+    text-decoration: none;
+  }
+  
+  .collection-title:hover {
+    text-decoration: underline;
+  } */
+
+
+Filename: C:\Users\maman\Desktop\ATLAS\atlas\frontend\src\UserCollectionsPage.js
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { Link, useParams } from 'react-router-dom';
+import './UserCollectionsPage.css';
+
+const UserCollectionsPage = () => {
+  const { userId } = useParams();
+  const [collections, setCollections] = useState([]);
+
+  useEffect(() => {
+    fetchUserCollections();
+  }, [userId]);
+
+  const fetchUserCollections = async () => {
+    try {
+      const response = await axios.get(`http://localhost:8000/api/users/${userId}/collections/`);
+      setCollections(response.data);
+    } catch (error) {
+      console.error('Error fetching user collections:', error);
+    }
+  };
+
+  return (
+    <div className="user-collections-page">
+      <h1>User Collections</h1>
+      <ul className="collection-list">
+        {collections.map((collection) => (
+          <Link
+            key={collection.id}
+            to={`/collections/${collection.id}`}
+            className="collection-item-link"
+          >
+            <li className="collection-item">
+              <span className="collection-title">{collection.title}</span>
+            </li>
+          </Link>
+        ))}
+      </ul>
+    </div>
+  );
+};
+
+export default UserCollectionsPage;
+
+
+
+Filename: C:\Users\maman\Desktop\ATLAS\atlas\frontend\src\UsersPage.css
+.users-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .search-bar {
+    display: flex;
+    margin-bottom: 20px;
+  }
+  
+  .search-bar input {
+    flex: 1;
+    padding: 10px;
+    font-size: 16px;
+  }
+  
+  .user-list {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .user-item {
+    border: 1px solid rgba(255, 255, 255, 0.833);
+    background-color: rgb(44, 44, 44);
+    color: rgb(223, 223, 223);
+    border-radius: 4px;
+    padding: 10px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  
+  .user-item:hover {
+    background-color: rgb(56, 56, 56);
+  }
+
+
+Filename: C:\Users\maman\Desktop\ATLAS\atlas\frontend\src\UsersPage.js
+import React, { useState } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import './UsersPage.css';
+
+const UsersPage = () => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const navigate = useNavigate();
+
+  const handleSearch = async (e) => {
+    if (e.key === 'Enter') {
+      try {
+        const response = await axios.get(`http://localhost:8000/api/search-users/?query=${searchQuery}`);
+        setSearchResults(response.data);
+      } catch (error) {
+        console.error('Error searching users:', error);
+      }
+    }
+  };
+
+  const showUserCollections = (userId) => {
+    navigate(`/users/${userId}/collections`);
+  };
+
+  return (
+    <div className="users-page">
+      <h1>Users</h1>
+      <div className="search-bar">
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          onKeyPress={handleSearch}
+          placeholder="Search users..."
+        />
+      </div>
+      <ul className="user-list">
+        {searchResults.map((user) => (
+          <li key={user.id} className="user-item" onClick={() => showUserCollections(user.id)}>
+            {user.username}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+};
+
+export default UsersPage;
 
 

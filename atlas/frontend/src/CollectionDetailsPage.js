@@ -11,10 +11,12 @@ const CollectionDetailsPage = () => {
   const [games, setGames] = useState([]);
   const navigate = useNavigate();
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isOwner, setIsOwner] = useState(false);
 
   useEffect(() => {
     fetchCollectionDetails();
     fetchCollectionGames();
+    checkCollectionOwnership();
   }, [collectionId]);
 
   const fetchCollectionDetails = async () => {
@@ -49,6 +51,19 @@ const CollectionDetailsPage = () => {
     }
   };
 
+  const checkCollectionOwnership = async () => {
+    try {
+      const response = await axios.get(`http://localhost:8000/api/collections/${collectionId}/check-ownership/`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+        },
+      });
+      setIsOwner(response.data.is_owner);
+    } catch (error) {
+      console.error('Error checking collection ownership:', error);
+    }
+  };
+
   const openDeleteModal = () => {
     setIsDeleteModalOpen(true);
   };
@@ -80,7 +95,9 @@ const CollectionDetailsPage = () => {
     <div className="collection-details-page">
       <h1 className="collection-title">{collection.title}</h1>
       <p className="collection-description">{collection.description}</p>
-      <button className="delete-button" onClick={openDeleteModal}>Delete Collection</button>
+      {isOwner && (
+        <button className="delete-button" onClick={openDeleteModal}>Delete Collection</button>
+      )}
       <h2 className="games-heading">Games</h2>
       <ul className="game-list">
         {games.map((game) => (

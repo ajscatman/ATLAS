@@ -1,12 +1,6 @@
-.collections-page {
+/* .user-collections-page {
     text-align: center;
     padding: 20px;
-  }
-  
-  .collections-heading {
-    font-size: 32px;
-    margin-bottom: 20px;
-    color: #000000;
   }
   
   .collection-list {
@@ -19,8 +13,8 @@
   
   .collection-item {
     margin-bottom: 20px;
-    width: 1000px;
-    background-color: #cfcfcf;
+    width: 300px;
+    background-color: #f1f1f1;
     border-radius: 4px;
     padding: 20px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -30,15 +24,15 @@
   
   .collection-item:hover {
     transform: translateY(-5px);
-    background-color: rgb(143, 143, 143);
+    background-color: rgb(207, 207, 207);
   }
   
-  .collection-item-link {
+  .collection-title {
+    font-size: 24px;
+    color: #000000;
     text-decoration: none;
-    color: black;
-    font-style: italic;
   }
   
-  .collection-item-link:hover {
-    text-decoration: none;
-  }
+  .collection-title:hover {
+    text-decoration: underline;
+  } */

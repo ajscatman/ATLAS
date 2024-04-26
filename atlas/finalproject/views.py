@@ -7,10 +7,25 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
-from .serializers import UserRegistrationSerializer, UserLoginSerializer, UserProfileSerializer, CollectionSerializer, CollectionGameSerializer
+from django.contrib.auth.models import User
+from .serializers import UserRegistrationSerializer, UserLoginSerializer, UserProfileSerializer, CollectionSerializer, CollectionGameSerializer, UserSerializer
 from .igdb_api import search_games, igdb_api_request
 from .models import Favorite, Collection, CollectionGame
 import requests
+
+class UserSearchView(generics.ListAPIView):
+    serializer_class = UserSerializer
+
+    def get_queryset(self):
+        query = self.request.GET.get('query', '')
+        return User.objects.filter(username__icontains=query)
+
+class UserCollectionsView(generics.ListAPIView):
+    serializer_class = CollectionSerializer
+
+    def get_queryset(self):
+        user_id = self.kwargs['user_id']
+        return Collection.objects.filter(user_id=user_id)
 
 class CollectionListCreateView(generics.ListCreateAPIView):
     serializer_class = CollectionSerializer
@@ -23,11 +38,15 @@ class CollectionListCreateView(generics.ListCreateAPIView):
         serializer.save(user=self.request.user)
 
 class CollectionRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Collection.objects.all()
     serializer_class = CollectionSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-    def get_queryset(self):
-        return Collection.objects.filter(user=self.request.user)
+    def get_object(self):
+        collection = super().get_object()
+        if collection.user != self.request.user:
+            self.permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+        return collection
 
 class CollectionGameListCreateView(generics.ListCreateAPIView):
     serializer_class = CollectionGameSerializer
@@ -35,6 +54,9 @@ class CollectionGameListCreateView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         collection_id = self.kwargs['collection_id']
+        collection = Collection.objects.get(id=collection_id)
+        if collection.user != self.request.user:
+            self.permission_classes = [permissions.IsAuthenticatedOrReadOnly]
         return CollectionGame.objects.filter(collection_id=collection_id)
 
     def perform_create(self, serializer):
@@ -48,6 +70,15 @@ class CollectionGameRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIV
     def get_queryset(self):
         collection_id = self.kwargs['collection_id']
         return CollectionGame.objects.filter(collection_id=collection_id)
+    
+class CollectionOwnershipCheck(generics.GenericAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        collection_id = self.kwargs['pk']
+        collection = Collection.objects.get(id=collection_id)
+        is_owner = collection.user == request.user
+        return Response({'is_owner': is_owner})
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -206,6 +237,7 @@ def game_details_view(request, game_id):
         return JsonResponse({'error': 'Game not found'}, status=404)
 
 
+
 def igdb_oauth_callback(request):
     # Extract the authorization code from the request parameters
     auth_code = request.GET.get('code')
@@ -243,6 +275,13 @@ class UserRegistrationView(generics.CreateAPIView):
             {
                 'refresh': str(refresh),
                 'access': str(refresh.access_token),
+                'user': {
+                    'id': user.id,
+                    'username': user.username,
+                    'email': user.email,
+                    'first_name': user.first_name,
+                    'last_name': user.last_name,
+                },
             },
             status=status.HTTP_201_CREATED
         )
