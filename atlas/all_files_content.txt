@@ -889,13 +889,16 @@ Filename: C:\Users\maman\Desktop\ATLAS\atlas\frontend\src\CollectionDetailsPage.
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
+import Modal from 'react-modal';
 import './CollectionDetailsPage.css';
+import { toast } from 'react-toastify';
 
 const CollectionDetailsPage = () => {
   const { collectionId } = useParams();
   const [collection, setCollection] = useState(null);
   const [games, setGames] = useState([]);
   const navigate = useNavigate();
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   useEffect(() => {
     fetchCollectionDetails();
@@ -934,19 +937,26 @@ const CollectionDetailsPage = () => {
     }
   };
 
+  const openDeleteModal = () => {
+    setIsDeleteModalOpen(true);
+  };
+
+  const closeDeleteModal = () => {
+    setIsDeleteModalOpen(false);
+  };
+
   const deleteCollection = async () => {
-    const confirmDelete = window.confirm('Are you sure you want to delete this collection?');
-    if (confirmDelete) {
-      try {
-        await axios.delete(`http://localhost:8000/api/collections/${collectionId}/`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
-          },
-        });
-        navigate('/collections');
-      } catch (error) {
-        console.error('Error deleting collection:', error);
-      }
+    try {
+      await axios.delete(`http://localhost:8000/api/collections/${collectionId}/`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+        },
+      });
+      navigate('/collections');
+      toast.success('Collection deleted successfully!');
+    } catch (error) {
+      console.error('Error deleting collection:', error);
+      toast.error('An error occurred while deleting the collection.');
     }
   };
 
@@ -958,7 +968,7 @@ const CollectionDetailsPage = () => {
     <div className="collection-details-page">
       <h1 className="collection-title">{collection.title}</h1>
       <p className="collection-description">{collection.description}</p>
-      <button className="delete-button" onClick={deleteCollection}>Delete Collection</button>
+      <button className="delete-button" onClick={openDeleteModal}>Delete Collection</button>
       <h2 className="games-heading">Games</h2>
       <ul className="game-list">
         {games.map((game) => (
@@ -973,6 +983,36 @@ const CollectionDetailsPage = () => {
           </li>
         ))}
       </ul>
+
+      <Modal
+        isOpen={isDeleteModalOpen}
+        onRequestClose={closeDeleteModal}
+        contentLabel="Delete Collection"
+        style={{
+          content: {
+            top: '50%',
+            left: '50%',
+            right: 'auto',
+            bottom: 'auto',
+            marginRight: '-50%',
+            transform: 'translate(-50%, -50%)',
+            backgroundColor: '#fff',
+            borderRadius: '8px',
+            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+            padding: '20px',
+          },
+          overlay: {
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          },
+        }}
+      >
+        <h2>Delete Collection</h2>
+        <p>Are you sure you want to delete this collection?</p>
+        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <button onClick={deleteCollection} style={{ marginRight: '10px' }}>Delete</button>
+          <button onClick={closeDeleteModal}>Cancel</button>
+        </div>
+      </Modal>
     </div>
   );
 };
@@ -1013,6 +1053,7 @@ Filename: C:\Users\maman\Desktop\ATLAS\atlas\frontend\src\CollectionsPage.css
   
   .collection-item:hover {
     transform: translateY(-5px);
+    background-color: rgb(207, 207, 207);
   }
   
   .collection-link {
@@ -1354,6 +1395,8 @@ import axios from 'axios';
 import { useParams } from 'react-router-dom';
 import Modal from 'react-modal';
 import './GameDetailsPage.css';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const GameDetailsPage = () => {
   const { id } = useParams();
@@ -1472,9 +1515,11 @@ const GameDetailsPage = () => {
           },
         });
         closeCollectionModal();
-        fetchUserCollections(); // Fetch updated collections after adding the game
+        fetchUserCollections();
+        toast.success('Game added to collection successfully!');
       } catch (error) {
         console.error('Error adding game to collection:', error);
+        toast.error('An error occurred while adding the game to the collection.');
       }
     } else if (newCollectionTitle) {
       try {
@@ -1496,8 +1541,10 @@ const GameDetailsPage = () => {
         });
         closeCollectionModal();
         fetchUserCollections();
+        toast.success('Game added to new collection successfully!');
       } catch (error) {
         console.error('Error creating new collection:', error);
+        toast.error('An error occurred while creating a new collection.');
       }
     }
   };
@@ -1791,12 +1838,14 @@ Filename: C:\Users\maman\Desktop\ATLAS\atlas\frontend\src\HomePage.js
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import './HomePage.css';
 
 const HomePage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
-  const [searchType, setSearchType] = useState('title'); // Can be 'title' or 'developer'
+  const [searchType, setSearchType] = useState('title');
   const navigate = useNavigate();
 
   const handleSearch = async (e) => {
@@ -1804,8 +1853,14 @@ const HomePage = () => {
       try {
         const response = await axios.get(`http://localhost:8000/api/search/?query=${searchQuery}&type=${searchType}`);
         setSearchResults(response.data.results);
+        if (response.data.results.length > 0) {
+          toast.success('Search results found!');
+        } else {
+          toast.info('No search results found.');
+        }
       } catch (error) {
         console.error('Error searching games:', error);
+        toast.error('An error occurred while searching for games.');
       }
     }
   };
