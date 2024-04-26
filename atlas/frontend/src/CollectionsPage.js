@@ -28,11 +28,15 @@ const CollectionsPage = () => {
       <h1 className="collections-heading">My Collections</h1>
       <ul className="collection-list">
         {collections.map((collection) => (
-          <li key={collection.id} className="collection-item">
-            <Link to={`/collections/${collection.id}`} className="collection-link">
-              {collection.title}
-            </Link>
-          </li>
+          <Link
+            key={collection.id}
+            to={`/collections/${collection.id}`}
+            className="collection-item-link"
+          >
+            <li className="collection-item">
+              <span className="collection-title">{collection.title}</span>
+            </li>
+          </Link>
         ))}
       </ul>
     </div>

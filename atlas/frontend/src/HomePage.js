@@ -9,12 +9,14 @@ const HomePage = () => {
   const [searchType, setSearchType] = useState('title'); // Can be 'title' or 'developer'
   const navigate = useNavigate();
 
-  const handleSearch = async () => {
-    try {
-      const response = await axios.get(`http://localhost:8000/api/search/?query=${searchQuery}&type=${searchType}`);
-      setSearchResults(response.data.results);
-    } catch (error) {
-      console.error('Error searching games:', error);
+  const handleSearch = async (e) => {
+    if (e.key === 'Enter') {
+      try {
+        const response = await axios.get(`http://localhost:8000/api/search/?query=${searchQuery}&type=${searchType}`);
+        setSearchResults(response.data.results);
+      } catch (error) {
+        console.error('Error searching games:', error);
+      }
     }
   };
 
@@ -35,9 +37,9 @@ const HomePage = () => {
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
+          onKeyPress={handleSearch}
           placeholder={`Search by ${searchType}...`}
         />
-        <button onClick={handleSearch}>Search</button>
       </div>
       <div className="game-grid">
         {searchResults.map((game) => (

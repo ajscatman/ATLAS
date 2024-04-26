@@ -169,8 +169,8 @@ const GameDetailsPage = () => {
         <div className={`rating-box ${getRatingClass(gameDetails.rating)}`} id="rating-box-2">
           <strong>Rating:</strong> {gameDetails.rating ? gameDetails.rating.toFixed(2) : 'Not Rated'}
         </div>
-        <button onClick={toggleFavorite}>{isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}</button>
-        <button onClick={openCollectionModal}>Add to Collection</button>
+        <button className="add-to-favorites-button" onClick={toggleFavorite}>{isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}</button>
+        <button className="add-to-collections-button" onClick={openCollectionModal}>Add to Collection</button>
       </div>
       <Modal
         isOpen={isCollectionModalOpen}

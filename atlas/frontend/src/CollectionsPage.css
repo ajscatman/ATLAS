@@ -7,7 +7,6 @@
     font-size: 32px;
     margin-bottom: 20px;
     color: #000000;
-    text-decoration: underline;
   }
   
   .collection-list {
@@ -26,6 +25,7 @@
     padding: 20px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     transition: transform 0.2s ease;
+    cursor: pointer;
   }
   
   .collection-item:hover {
