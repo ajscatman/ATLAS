@@ -119,7 +119,7 @@ def get_favorites(request):
 
     if game_ids:
         endpoint = 'games'
-        query = f'fields name, cover.url, rating; where id = ({",".join(str(game_id) for game_id in game_ids)}); limit 50;'
+        query = f'fields name, cover.url, rating; where id = ({",".join(str(game_id) for game_id in game_ids)}); limit 200;'
         games = igdb_api_request(endpoint, query)
         for game in games:
             cover_url = game.get('cover', {}).get('url', '')
@@ -153,7 +153,7 @@ def search_games_view(request):
 
 def search_games(query, search_type='title'):
     endpoint = 'games'
-    base_query = f'fields id, name, cover.url, cover.image_id, involved_companies.company.name, involved_companies.developer, involved_companies.publisher, genres.name, platforms.name, rating; limit 50;'
+    base_query = f'fields id, name, cover.url, cover.image_id, involved_companies.company.name, involved_companies.developer, involved_companies.publisher, genres.name, platforms.name, rating; limit 200;'
 
     if search_type == 'title':
         query_string = f'{base_query} where name ~ *"{query}"*; sort rating desc;'
@@ -205,7 +205,7 @@ def get_games_by_ids(request):
         return Response({'error': 'No game IDs provided.'}, status=400)
 
     endpoint = 'games'
-    query = f'fields name, cover.url, rating, summary, genres.name, platforms.name; where id = ({",".join(str(game_id) for game_id in game_ids)}); limit 50;'
+    query = f'fields name, cover.url, rating, summary, genres.name, platforms.name; where id = ({",".join(str(game_id) for game_id in game_ids)}); limit 200;'
     games = igdb_api_request(endpoint, query)
 
     for game in games:
