@@ -33,12 +33,12 @@
     background-color: rgb(207, 207, 207);
   }
   
-  .collection-link {
-    font-size: 24px;
-    color: #000000;
+  .collection-item-link {
     text-decoration: none;
+    color: black;
+    font-style: italic;
   }
   
-  /* .collection-link:hover {
-    text-decoration: underline;
-  } */
+  .collection-item-link:hover {
+    text-decoration: none;
+  }
