@@ -30,9 +30,9 @@ const FavoritesPage = () => {
 
   return (
     <div className="favorites-page">
-      <h1 className="favorites-heading">My Favorites</h1>
-      <h4 >Your own hall of fame where you keep your cherished titles.</h4>
-      <div className="favorites-grid">
+      <h1 className="favorites-heading animated-element">My Favorites</h1>
+      <h4 className="animated-element">Your own hall of fame where you keep your cherished titles.</h4>
+      <div className="favorites-grid animated-element">
         {favorites.map((game) => (
           <div key={game.id} className="favorite-card" onClick={() => showGameDetails(game.id)}>
             <img src={game.cover.url} alt={game.name} />

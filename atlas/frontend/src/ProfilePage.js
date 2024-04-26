@@ -155,7 +155,7 @@ const ProfilePage = () => {
                 </button>
                 </div>
             </>
-            ) : isEditing ? (
+            ): isEditing ?(
                 <>
                 <h2 className="profile-subheading">
                   Hi, {profile.first_name} {profile.last_name}!
@@ -225,7 +225,7 @@ const ProfilePage = () => {
                   </button>
                 </div>
               </>
-            ) : (
+            ):(
               <>
                 <h2 className="profile-subheading">
                   Hi, {profile.first_name} {profile.last_name}!
@@ -240,7 +240,7 @@ const ProfilePage = () => {
               </>
             )}
           </div>
-        ) : (
+        ):(
           <p>Loading profile...</p>
         )}
       </div>

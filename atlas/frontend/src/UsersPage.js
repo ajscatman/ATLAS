@@ -25,8 +25,8 @@ const UsersPage = () => {
 
   return (
     <div className="users-page">
-      <h1>Users</h1>
-      <div className="search-bar">
+      <h1 className="animated-element">Users</h1>
+      <div className="search-bar animated-element">
         <input
           type="text"
           value={searchQuery}

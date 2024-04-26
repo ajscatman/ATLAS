@@ -22,8 +22,8 @@ const UserCollectionsPage = () => {
 
   return (
     <div className="user-collections-page">
-      <h1>User Collections</h1>
-      <ul className="collection-list">
+      <h1 className="animated-element user-collections-heading">User Collections</h1>
+      <ul className="collection-list animated-element">
         {collections.map((collection) => (
           <Link
             key={collection.id}
