@@ -4,15 +4,18 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './HomePage.css';
+import LoadingSpinner from './LoadingSpinner';
 
 const HomePage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [searchType, setSearchType] = useState('title');
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSearch = async (e) => {
     if (e.key === 'Enter') {
+      setIsLoading(true);
       try {
         const response = await axios.get(`http://localhost:8000/api/search/?query=${searchQuery}&type=${searchType}`);
         setSearchResults(response.data.results);
@@ -25,6 +28,7 @@ const HomePage = () => {
         console.error('Error searching games:', error);
         toast.error('An error occurred while searching for games.');
       }
+      setIsLoading(false);
     }
   };
 
@@ -40,15 +44,20 @@ const HomePage = () => {
         <button onClick={() => setSearchType('title')} className={searchType === 'title' ? 'active' : ''}>Title</button>
         <button onClick={() => setSearchType('developer')} className={searchType === 'developer' ? 'active' : ''}>Developer</button>
       </div>
-      <div className="search-bar animated-element">
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          onKeyPress={handleSearch}
-          placeholder={`Search by ${searchType}...`}
-        />
+      <div className="search-container animated-element">
+        <div className="search-bar">
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyPress={handleSearch}
+            placeholder={`Search by ${searchType}...`}
+          />
+        </div>
+       {isLoading && <LoadingSpinner />}
       </div>
+      
+
       <div className="game-grid">
         {searchResults.map((game) => (
           <div key={game.id} className="game-card animated-element" onClick={() => showGameDetails(game.id)}>

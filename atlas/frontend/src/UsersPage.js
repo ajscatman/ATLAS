@@ -26,6 +26,7 @@ const UsersPage = () => {
   return (
     <div className="users-page">
       <h1 className="animated-element">Users</h1>
+      <h4 className="animated-element">Search for users on ATLAS and see what game collections they've made.</h4>
       <div className="search-bar animated-element">
         <input
           type="text"
