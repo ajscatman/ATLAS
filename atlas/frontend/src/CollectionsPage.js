@@ -26,6 +26,7 @@ const CollectionsPage = () => {
   return (
     <div className="collections-page">
       <h1 className="collections-heading">My Collections</h1>
+      <h4>This is where your curated collections are stored.</h4>
       <ul className="collection-list">
         {collections.map((collection) => (
           <Link
