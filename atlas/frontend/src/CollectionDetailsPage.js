@@ -138,8 +138,8 @@ const CollectionDetailsPage = () => {
         <h2>Delete Collection</h2>
         <p>Are you sure you want to delete this collection?</p>
         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-          <button onClick={deleteCollection} style={{ marginRight: '10px' }}>Delete</button>
-          <button onClick={closeDeleteModal}>Cancel</button>
+        <button onClick={deleteCollection} style={{ marginRight: '10px', backgroundColor: '#f44336', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer' }}>Delete</button>
+        <button onClick={closeDeleteModal} style={{ backgroundColor: '#ccc', color: '#000', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer' }}>Cancel</button>
         </div>
       </Modal>
     </div>

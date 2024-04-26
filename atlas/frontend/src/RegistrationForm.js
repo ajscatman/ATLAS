@@ -38,7 +38,7 @@ const RegistrationForm = () => {
   };
 
   return (
-    <div className="registration-container">
+    <div className="registration-container animated-element">
       <div className="registration-form-container">
         <h2 className="registration-heading">Register</h2>
         <form onSubmit={handleSubmit} className="registration-form">

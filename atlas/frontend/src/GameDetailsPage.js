@@ -26,16 +26,10 @@ const GameDetailsPage = () => {
     try {
       const response = await axios.get(`http://localhost:8000/api/games/${id}/`);
       const details = response.data;
-
-      // Format the release date
       const releaseDate = details.first_release_date ? new Date(details.first_release_date * 1000).toLocaleDateString() : 'No release date';
-
-      // Extract the genre and platform names
       const genres = details.genres ? details.genres.map(genre => genre.name).join(', ') : 'No genres listed';
       const platforms = details.platforms ? details.platforms.map(platform => platform.name).join(', ') : 'No platforms listed';
-
       const summary = details.summary || 'No summary available.';
-
       const videos = details.videos ? details.videos.map(video => ({
         videoId: video.video_id
       })) : [];
@@ -245,8 +239,8 @@ const GameDetailsPage = () => {
           }}
         ></textarea>
         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-          <button onClick={addToCollection} style={{ marginRight: '10px' }}>Add</button>
-          <button onClick={closeCollectionModal}>Cancel</button>
+          <button onClick={addToCollection} style={{ marginRight: '10px', backgroundColor: '#007bff', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer' }}>Add</button>
+          <button onClick={closeCollectionModal} style={{ backgroundColor: '#ccc', color: '#000', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer' }}>Cancel</button>
         </div>
       </Modal>
       <div className="game-videos">

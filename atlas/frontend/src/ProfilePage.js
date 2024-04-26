@@ -119,7 +119,7 @@ const ProfilePage = () => {
   };
 
   return (
-    <div className="profile-container">
+    <div className="profile-container animated-element">
       <div className="profile-form-container">
         <h1 className="profile-heading">User Profile</h1>
         {profile ? (

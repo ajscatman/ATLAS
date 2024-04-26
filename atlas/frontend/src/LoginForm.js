@@ -31,7 +31,7 @@ const LoginForm = () => {
   };
 
   return (
-    <div className="login-container">
+    <div className="login-container animated-element">
       <div className="login-form-container">
         <h2 className="login-heading">Login</h2>
         <form onSubmit={handleSubmit} className="login-form">
