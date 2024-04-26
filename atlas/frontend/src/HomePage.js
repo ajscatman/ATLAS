@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import './HomePage.css';
 
 const HomePage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
-  const [searchType, setSearchType] = useState('title'); // Can be 'title' or 'developer'
+  const [searchType, setSearchType] = useState('title');
   const navigate = useNavigate();
 
   const handleSearch = async (e) => {
@@ -14,8 +16,14 @@ const HomePage = () => {
       try {
         const response = await axios.get(`http://localhost:8000/api/search/?query=${searchQuery}&type=${searchType}`);
         setSearchResults(response.data.results);
+        if (response.data.results.length > 0) {
+          toast.success('Search results found!');
+        } else {
+          toast.info('No search results found.');
+        }
       } catch (error) {
         console.error('Error searching games:', error);
+        toast.error('An error occurred while searching for games.');
       }
     }
   };

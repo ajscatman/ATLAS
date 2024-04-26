@@ -3,6 +3,8 @@ import axios from 'axios';
 import { useParams } from 'react-router-dom';
 import Modal from 'react-modal';
 import './GameDetailsPage.css';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const GameDetailsPage = () => {
   const { id } = useParams();
@@ -121,9 +123,11 @@ const GameDetailsPage = () => {
           },
         });
         closeCollectionModal();
-        fetchUserCollections(); // Fetch updated collections after adding the game
+        fetchUserCollections();
+        toast.success('Game added to collection successfully!');
       } catch (error) {
         console.error('Error adding game to collection:', error);
+        toast.error('An error occurred while adding the game to the collection.');
       }
     } else if (newCollectionTitle) {
       try {
@@ -145,8 +149,10 @@ const GameDetailsPage = () => {
         });
         closeCollectionModal();
         fetchUserCollections();
+        toast.success('Game added to new collection successfully!');
       } catch (error) {
         console.error('Error creating new collection:', error);
+        toast.error('An error occurred while creating a new collection.');
       }
     }
   };

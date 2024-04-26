@@ -30,6 +30,7 @@
   
   .collection-item:hover {
     transform: translateY(-5px);
+    background-color: rgb(207, 207, 207);
   }
   
   .collection-link {
