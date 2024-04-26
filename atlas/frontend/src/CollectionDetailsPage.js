@@ -47,15 +47,18 @@ const CollectionDetailsPage = () => {
   };
 
   const deleteCollection = async () => {
-    try {
-      await axios.delete(`http://localhost:8000/api/collections/${collectionId}/`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
-        },
-      });
-      navigate('/collections');
-    } catch (error) {
-      console.error('Error deleting collection:', error);
+    const confirmDelete = window.confirm('Are you sure you want to delete this collection?');
+    if (confirmDelete) {
+      try {
+        await axios.delete(`http://localhost:8000/api/collections/${collectionId}/`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+          },
+        });
+        navigate('/collections');
+      } catch (error) {
+        console.error('Error deleting collection:', error);
+      }
     }
   };
 
@@ -85,17 +88,5 @@ const CollectionDetailsPage = () => {
     </div>
   );
 };
-
-function getRatingClass(rating) {
-  if (rating >= 70) {
-    return 'rating-green';
-  } else if (rating >= 40) {
-    return 'rating-orange';
-  } else if (rating < 40) {
-    return 'rating-red';
-  } else {
-    return '';
-  }
-}
 
 export default CollectionDetailsPage;
