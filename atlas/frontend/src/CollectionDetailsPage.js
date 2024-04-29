@@ -12,11 +12,14 @@ const CollectionDetailsPage = () => {
   const navigate = useNavigate();
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
+  const [upvoteCount, setUpvoteCount] = useState(0);
+  const [isUpvoted, setIsUpvoted] = useState(false);
 
   useEffect(() => {
     fetchCollectionDetails();
     fetchCollectionGames();
     checkCollectionOwnership();
+    fetchUpvoteStatus();
   }, [collectionId]);
 
   const fetchCollectionDetails = async () => {
@@ -87,6 +90,37 @@ const CollectionDetailsPage = () => {
     }
   };
 
+  const fetchUpvoteStatus = async () => {
+    try {
+      const response = await axios.get(`http://localhost:8000/api/collections/${collectionId}/upvote/`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+        },
+      });
+      setIsUpvoted(response.data.is_upvoted);
+      setUpvoteCount(response.data.upvote_count);
+    } catch (error) {
+      console.error('Error fetching upvote status:', error);
+    }
+  };
+
+const toggleUpvote = async () => {
+  try {
+    const response = await axios.post(`http://localhost:8000/api/collections/${collectionId}/upvote/`, null, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+      },
+    });
+
+    setIsUpvoted(response.data.message === 'Upvote added');
+    setUpvoteCount(response.data.upvote_count);
+    toast.success(response.data.message);
+  } catch (error) {
+    console.error('Error upvoting collection:', error);
+    toast.error('An error occurred while upvoting the collection.');
+  }
+};
+
   if (!collection) {
     return <div>Loading...</div>;
   }
@@ -98,7 +132,7 @@ const CollectionDetailsPage = () => {
       {isOwner && (
         <button className="delete-button" onClick={openDeleteModal}>Delete Collection</button>
       )}
-      <h2 className="games-heading">Games</h2>
+      <h2 className="games-heading">Games <span className="upvote-score">Score: {upvoteCount}</span></h2>
       <ul className="game-list">
         {games.map((game) => (
           <li key={game.id} className="game-item">
@@ -112,7 +146,12 @@ const CollectionDetailsPage = () => {
           </li>
         ))}
       </ul>
-
+      {!isOwner && (
+        <button className="upvote-button" onClick={toggleUpvote}>
+          {isUpvoted ? 'Downvote' : 'Upvote'}
+        </button>
+      )}
+  
       <Modal
         isOpen={isDeleteModalOpen}
         onRequestClose={closeDeleteModal}
@@ -138,8 +177,8 @@ const CollectionDetailsPage = () => {
         <h2>Delete Collection</h2>
         <p>Are you sure you want to delete this collection?</p>
         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-        <button onClick={deleteCollection} style={{ marginRight: '10px', backgroundColor: '#f44336', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer' }}>Delete</button>
-        <button onClick={closeDeleteModal} style={{ backgroundColor: '#ccc', color: '#000', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer' }}>Cancel</button>
+          <button onClick={deleteCollection} style={{ marginRight: '10px', backgroundColor: '#f44336', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer' }}>Delete</button>
+          <button onClick={closeDeleteModal} style={{ backgroundColor: '#ccc', color: '#000', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer' }}>Cancel</button>
         </div>
       </Modal>
     </div>

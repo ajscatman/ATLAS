@@ -1,16 +1,16 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.conf import settings
 from django.http import JsonResponse
-from rest_framework import generics, status, permissions
+from rest_framework import generics, status, permissions, serializers
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
-from .serializers import UserRegistrationSerializer, UserLoginSerializer, UserProfileSerializer, CollectionSerializer, CollectionGameSerializer, UserSerializer
+from .serializers import UserRegistrationSerializer, UserLoginSerializer, UserProfileSerializer, CollectionSerializer, CollectionGameSerializer, UserSerializer, CollectionUpvoteSerializer
 from .igdb_api import search_games, igdb_api_request
-from .models import Favorite, Collection, CollectionGame
+from .models import Favorite, Collection, CollectionGame, CollectionUpvote
 import requests
 
 class UserSearchView(generics.ListAPIView):
@@ -79,7 +79,36 @@ class CollectionOwnershipCheck(generics.GenericAPIView):
         collection = Collection.objects.get(id=collection_id)
         is_owner = collection.user == request.user
         return Response({'is_owner': is_owner})
+    
+class CollectionUpvoteView(generics.GenericAPIView):
+    serializer_class = CollectionUpvoteSerializer
+    permission_classes = [IsAuthenticated]
 
+    def get(self, request, collection_id):
+        collection = get_object_or_404(Collection, id=collection_id)
+        user = request.user
+
+        is_upvoted = CollectionUpvote.objects.filter(user=user, collection=collection).exists()
+        upvote_count = collection.collectionupvote_set.count()
+
+        return Response({'is_upvoted': is_upvoted, 'upvote_count': upvote_count}, status=status.HTTP_200_OK)
+
+    def post(self, request, collection_id):
+        collection = get_object_or_404(Collection, id=collection_id)
+        user = request.user
+
+        # Check if the user has already upvoted the collection
+        if CollectionUpvote.objects.filter(user=user, collection=collection).exists():
+            # If the user has already upvoted, remove the upvote
+            CollectionUpvote.objects.filter(user=user, collection=collection).delete()
+            return Response({'message': 'Upvote removed', 'upvote_count': collection.collectionupvote_set.count()}, status=status.HTTP_200_OK)
+        else:
+            # If the user has not upvoted, create a new upvote
+            serializer = self.serializer_class(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save(user=user, collection=collection)
+            return Response({'message': 'Upvote added', 'upvote_count': collection.collectionupvote_set.count()}, status=status.HTTP_201_CREATED)
+        
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def check_favorite(request):
@@ -317,3 +346,4 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
 
     def get_object(self):
         return self.request.user
+    

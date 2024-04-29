@@ -76,3 +76,22 @@
   .game-item p {
     margin-bottom: 10px;
   }
+
+  .upvote-score {
+    font-size: 18px;
+    margin-left: 10px;
+  }
+  
+  .upvote-button {
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #00fd59;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 20px;
+  }
+  
+  .upvote-button:hover {
+    background-color: #00952f;
+  }

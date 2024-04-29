@@ -2,7 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth.models import User
 from rest_framework.validators import UniqueValidator
 from django.contrib.auth.password_validation import validate_password
-from .models import Collection, CollectionGame
+from .models import Collection, CollectionGame, CollectionUpvote
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(
@@ -53,10 +53,14 @@ class UserProfileSerializer(serializers.ModelSerializer):
     
 class CollectionSerializer(serializers.ModelSerializer):
     user = serializers.ReadOnlyField(source='user.id')
+    upvote_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Collection
-        fields = ['id', 'title', 'description', 'user']
+        fields = ['id', 'title', 'description', 'user', 'upvote_count']
+
+    def get_upvote_count(self, obj):
+        return obj.collectionupvote_set.count()
 
 class CollectionGameSerializer(serializers.ModelSerializer):
     class Meta:
@@ -67,3 +71,9 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'username']
+
+
+class CollectionUpvoteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CollectionUpvote
+        fields = ['id', 'created_at']
