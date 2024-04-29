@@ -14,6 +14,9 @@ const CollectionDetailsPage = () => {
   const [isOwner, setIsOwner] = useState(false);
   const [upvoteCount, setUpvoteCount] = useState(0);
   const [isUpvoted, setIsUpvoted] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editedTitle, setEditedTitle] = useState('');
+  const [editedDescription, setEditedDescription] = useState('');
 
   useEffect(() => {
     fetchCollectionDetails();
@@ -75,6 +78,35 @@ const CollectionDetailsPage = () => {
     setIsDeleteModalOpen(false);
   };
 
+  const openEditModal = () => {
+    setEditedTitle(collection.title);
+    setEditedDescription(collection.description);
+    setIsEditModalOpen(true);
+  };
+  
+  const closeEditModal = () => {
+    setIsEditModalOpen(false);
+  };
+
+  const updateCollection = async () => {
+    try {
+      await axios.put(`http://localhost:8000/api/collections/${collectionId}/`, {
+        title: editedTitle,
+        description: editedDescription,
+      }, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+        },
+      });
+      closeEditModal();
+      fetchCollectionDetails();
+      toast.success('Collection updated successfully!');
+    } catch (error) {
+      console.error('Error updating collection:', error);
+      toast.error('An error occurred while updating the collection.');
+    }
+  };
+  
   const deleteCollection = async () => {
     try {
       await axios.delete(`http://localhost:8000/api/collections/${collectionId}/`, {
@@ -130,7 +162,10 @@ const toggleUpvote = async () => {
       <h1 className="collection-title">{collection.title}</h1>
       <p className="collection-description">{collection.description}</p>
       {isOwner && (
-        <button className="delete-button" onClick={openDeleteModal}>Delete Collection</button>
+        <>
+          <button className="delete-button" onClick={openDeleteModal}>Delete Collection</button>
+          <button className="edit-button" onClick={openEditModal}>Edit Collection</button>
+        </>
       )}
       <h2 className="games-heading">Games <span className="upvote-score">Score: {upvoteCount}</span></h2>
       <ul className="game-list">
@@ -179,6 +214,59 @@ const toggleUpvote = async () => {
         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
           <button onClick={deleteCollection} style={{ marginRight: '10px', backgroundColor: '#f44336', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer' }}>Delete</button>
           <button onClick={closeDeleteModal} style={{ backgroundColor: '#ccc', color: '#000', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer' }}>Cancel</button>
+        </div>
+      </Modal>
+      <Modal
+        isOpen={isEditModalOpen}
+        onRequestClose={closeEditModal}
+        contentLabel="Edit Collection"
+        style={{
+          content: {
+            top: '50%',
+            left: '50%',
+            right: 'auto',
+            bottom: 'auto',
+            marginRight: '-50%',
+            transform: 'translate(-50%, -50%)',
+            backgroundColor: '#fff',
+            borderRadius: '8px',
+            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+            padding: '20px',
+          },
+          overlay: {
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          },
+        }}
+      >
+        <h2>Edit Collection</h2>
+        <input
+          type="text"
+          placeholder="Title"
+          value={editedTitle}
+          onChange={(e) => setEditedTitle(e.target.value)}
+          style={{
+            width: '100%',
+            padding: '10px',
+            marginBottom: '10px',
+            border: '1px solid #ccc',
+            borderRadius: '4px',
+          }}
+        />
+        <textarea
+          placeholder="Description"
+          value={editedDescription}
+          onChange={(e) => setEditedDescription(e.target.value)}
+          style={{
+            width: '100%',
+            padding: '10px',
+            marginBottom: '10px',
+            border: '1px solid #ccc',
+            borderRadius: '4px',
+          }}
+        ></textarea>
+        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <button onClick={updateCollection} style={{ marginRight: '10px', backgroundColor: '#007bff', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer' }}>Save</button>
+          <button onClick={closeEditModal} style={{ backgroundColor: '#ccc', color: '#000', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer' }}>Cancel</button>
         </div>
       </Modal>
     </div>

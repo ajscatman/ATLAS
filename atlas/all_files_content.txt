@@ -467,7 +467,7 @@ from django.urls import path
 from .views import UserRegistrationView, UserLoginView, UserProfileView, validate_password, igdb_oauth_callback, \
     search_games_view, game_details_view, toggle_favorite, check_favorite, get_favorites, CollectionGameListCreateView, \
     CollectionGameRetrieveUpdateDestroyView, CollectionListCreateView, CollectionRetrieveUpdateDestroyView, get_games_by_ids, UserSearchView, \
-    UserCollectionsView, CollectionOwnershipCheck, CollectionUpvoteView
+    UserCollectionsView, CollectionOwnershipCheck, CollectionUpvoteView, TopCollectionsView
 
 urlpatterns = [
     path('register/', UserRegistrationView.as_view(), name='user-registration'),
@@ -489,6 +489,7 @@ urlpatterns = [
     path('users/<int:user_id>/collections/', UserCollectionsView.as_view(), name='user-collections'),
     path('collections/<int:pk>/check-ownership/', CollectionOwnershipCheck.as_view(), name='collection-ownership-check'),
     path('collections/<int:collection_id>/upvote/', CollectionUpvoteView.as_view(), name='collection-upvote'),
+    path('top-collections/', TopCollectionsView.as_view(), name='top-collections'),
 ]
 
 
@@ -503,6 +504,7 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
+from django.db.models import Count
 from .serializers import UserRegistrationSerializer, UserLoginSerializer, UserProfileSerializer, CollectionSerializer, CollectionGameSerializer, UserSerializer, CollectionUpvoteSerializer
 from .igdb_api import search_games, igdb_api_request
 from .models import Favorite, Collection, CollectionGame, CollectionUpvote
@@ -587,6 +589,28 @@ class CollectionUpvoteView(generics.GenericAPIView):
         upvote_count = collection.collectionupvote_set.count()
 
         return Response({'is_upvoted': is_upvoted, 'upvote_count': upvote_count}, status=status.HTTP_200_OK)
+
+    def post(self, request, collection_id):
+        collection = get_object_or_404(Collection, id=collection_id)
+        user = request.user
+
+        # Check if the user has already upvoted the collection
+        if CollectionUpvote.objects.filter(user=user, collection=collection).exists():
+            # If the user has already upvoted, remove the upvote
+            CollectionUpvote.objects.filter(user=user, collection=collection).delete()
+            return Response({'message': 'Upvote removed', 'upvote_count': collection.collectionupvote_set.count()}, status=status.HTTP_200_OK)
+        else:
+            # If the user has not upvoted, create a new upvote
+            serializer = self.serializer_class(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save(user=user, collection=collection)
+            return Response({'message': 'Upvote added', 'upvote_count': collection.collectionupvote_set.count()}, status=status.HTTP_201_CREATED)
+    
+class TopCollectionsView(generics.ListAPIView):
+    serializer_class = CollectionSerializer
+
+    def get_queryset(self):
+        return Collection.objects.annotate(upvote_count=Count('collectionupvote')).filter(upvote_count__gte=3).order_by('-upvote_count')
 
     def post(self, request, collection_id):
         collection = get_object_or_404(Collection, id=collection_id)
@@ -903,6 +927,7 @@ import CollectionsPage from './CollectionsPage';
 import CollectionDetailsPage from './CollectionDetailsPage';
 import UsersPage from './UsersPage';
 import UserCollectionsPage from './UserCollectionsPage';
+import ChartsPage from './ChartsPage';
 
 
 const App = () => {
@@ -932,6 +957,7 @@ const App = () => {
           <Route path="/collections/:collectionId" element={<ProtectedRoute><CollectionDetailsPage /></ProtectedRoute>} />
           <Route path="/users" element={<ProtectedRoute><UsersPage /></ProtectedRoute>} />
           <Route path="/users/:userId/collections" element={<ProtectedRoute><UserCollectionsPage /></ProtectedRoute>} />
+          <Route path="/charts" element={<ProtectedRoute><ChartsPage /></ProtectedRoute>} />
         </Routes>
         <ToastContainer />
       </div>
@@ -941,6 +967,113 @@ const App = () => {
 
 export default App;
 
+
+
+Filename: C:\Users\maman\Desktop\ATLAS\atlas\frontend\src\ChartsPage.css
+.charts-page {
+    text-align: center;
+    padding: 20px;
+  }
+  
+  .charts-heading {
+    font-size: 32px;
+    margin-bottom: 20px;
+    color: #000000;
+  }
+  
+  .collection-list {
+    list-style-type: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .collection-item {
+    margin-bottom: 20px;
+    width: 1000px;
+    background-color: #212121;
+    color: rgb(230, 230, 230);
+    border-radius: 4px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .collection-item:hover {
+    transform: translateY(-5px);
+    background-color: rgb(61, 61, 61);
+  }
+  
+  .collection-item-link {
+    text-decoration: none;
+    color: black;
+  }
+  
+  .collection-item-link:hover {
+    text-decoration: none;
+  }
+  
+  .collection-score {
+    font-size: 18px;
+    font-weight: bold;
+  }
+
+
+Filename: C:\Users\maman\Desktop\ATLAS\atlas\frontend\src\ChartsPage.js
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { Link } from 'react-router-dom';
+import './ChartsPage.css';
+
+const ChartsPage = () => {
+  const [topCollections, setTopCollections] = useState([]);
+
+  useEffect(() => {
+    fetchTopCollections();
+  }, []);
+
+  const fetchTopCollections = async () => {
+    try {
+      const response = await axios.get('http://localhost:8000/api/top-collections/', {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+        },
+      });
+      setTopCollections(response.data);
+    } catch (error) {
+      console.error('Error fetching top collections:', error);
+    }
+  };
+
+  return (
+    <div className="charts-page">
+      <h1 className="charts-heading animated-element">Top Collections</h1>
+      <h4 className="animated-element">Discover the most upvoted collections on ATLAS.</h4>
+      <h6 className="animated-element">Minimum score requirement (3)</h6>
+      <ul className="collection-list animated-element">
+        {topCollections.map((collection) => (
+          <Link
+            key={collection.id}
+            to={`/collections/${collection.id}`}
+            className="collection-item-link"
+          >
+            <li className="collection-item">
+              <span className="collection-title">{collection.title}</span>
+              <span className="collection-score">Score: {collection.upvote_count}</span>
+            </li>
+          </Link>
+        ))}
+      </ul>
+    </div>
+  );
+};
+
+export default ChartsPage;
 
 
 Filename: C:\Users\maman\Desktop\ATLAS\atlas\frontend\src\CollectionDetailsPage.css
@@ -2488,6 +2621,9 @@ const NavigationBar = () => {
               <>
                 <li className="nav-item">
                   <Link to="/users" className="nav-link">Users</Link>
+                </li>
+                <li className="nav-item">
+                <Link to="/charts" className="nav-link">Charts</Link>
                 </li>
                 <li className="nav-item">
                   <Link to="/collections" className="nav-link">Collections</Link>
