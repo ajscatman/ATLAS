@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
+from django.db.models import Count
 from .serializers import UserRegistrationSerializer, UserLoginSerializer, UserProfileSerializer, CollectionSerializer, CollectionGameSerializer, UserSerializer, CollectionUpvoteSerializer
 from .igdb_api import search_games, igdb_api_request
 from .models import Favorite, Collection, CollectionGame, CollectionUpvote
@@ -92,6 +93,28 @@ class CollectionUpvoteView(generics.GenericAPIView):
         upvote_count = collection.collectionupvote_set.count()
 
         return Response({'is_upvoted': is_upvoted, 'upvote_count': upvote_count}, status=status.HTTP_200_OK)
+
+    def post(self, request, collection_id):
+        collection = get_object_or_404(Collection, id=collection_id)
+        user = request.user
+
+        # Check if the user has already upvoted the collection
+        if CollectionUpvote.objects.filter(user=user, collection=collection).exists():
+            # If the user has already upvoted, remove the upvote
+            CollectionUpvote.objects.filter(user=user, collection=collection).delete()
+            return Response({'message': 'Upvote removed', 'upvote_count': collection.collectionupvote_set.count()}, status=status.HTTP_200_OK)
+        else:
+            # If the user has not upvoted, create a new upvote
+            serializer = self.serializer_class(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save(user=user, collection=collection)
+            return Response({'message': 'Upvote added', 'upvote_count': collection.collectionupvote_set.count()}, status=status.HTTP_201_CREATED)
+    
+class TopCollectionsView(generics.ListAPIView):
+    serializer_class = CollectionSerializer
+
+    def get_queryset(self):
+        return Collection.objects.annotate(upvote_count=Count('collectionupvote')).filter(upvote_count__gte=3).order_by('-upvote_count')
 
     def post(self, request, collection_id):
         collection = get_object_or_404(Collection, id=collection_id)

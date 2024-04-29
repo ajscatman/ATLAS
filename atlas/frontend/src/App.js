@@ -13,6 +13,7 @@ import CollectionsPage from './CollectionsPage';
 import CollectionDetailsPage from './CollectionDetailsPage';
 import UsersPage from './UsersPage';
 import UserCollectionsPage from './UserCollectionsPage';
+import ChartsPage from './ChartsPage';
 
 
 const App = () => {
@@ -42,6 +43,7 @@ const App = () => {
           <Route path="/collections/:collectionId" element={<ProtectedRoute><CollectionDetailsPage /></ProtectedRoute>} />
           <Route path="/users" element={<ProtectedRoute><UsersPage /></ProtectedRoute>} />
           <Route path="/users/:userId/collections" element={<ProtectedRoute><UserCollectionsPage /></ProtectedRoute>} />
+          <Route path="/charts" element={<ProtectedRoute><ChartsPage /></ProtectedRoute>} />
         </Routes>
         <ToastContainer />
       </div>

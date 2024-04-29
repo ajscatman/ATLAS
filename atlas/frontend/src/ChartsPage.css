@@ -1,0 +1,52 @@
+.charts-page {
+    text-align: center;
+    padding: 20px;
+  }
+  
+  .charts-heading {
+    font-size: 32px;
+    margin-bottom: 20px;
+    color: #000000;
+  }
+  
+  .collection-list {
+    list-style-type: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .collection-item {
+    margin-bottom: 20px;
+    width: 1000px;
+    background-color: #212121;
+    color: rgb(230, 230, 230);
+    border-radius: 4px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .collection-item:hover {
+    transform: translateY(-5px);
+    background-color: rgb(61, 61, 61);
+  }
+  
+  .collection-item-link {
+    text-decoration: none;
+    color: black;
+  }
+  
+  .collection-item-link:hover {
+    text-decoration: none;
+  }
+  
+  .collection-score {
+    font-size: 18px;
+    font-weight: bold;
+  }

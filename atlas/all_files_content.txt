@@ -459,7 +459,7 @@ class UserSerializer(serializers.ModelSerializer):
 class CollectionUpvoteSerializer(serializers.ModelSerializer):
     class Meta:
         model = CollectionUpvote
-        fields = ['id', 'user', 'collection', 'created_at']
+        fields = ['id', 'created_at']
 
 
 Filename: C:\Users\maman\Desktop\ATLAS\atlas\finalproject\urls.py
@@ -575,31 +575,35 @@ class CollectionOwnershipCheck(generics.GenericAPIView):
         is_owner = collection.user == request.user
         return Response({'is_owner': is_owner})
     
-class CollectionUpvoteView(generics.CreateAPIView):
+class CollectionUpvoteView(generics.GenericAPIView):
     serializer_class = CollectionUpvoteSerializer
     permission_classes = [IsAuthenticated]
 
-    def perform_create(self, serializer):
-        collection_id = self.kwargs['collection_id']
+    def get(self, request, collection_id):
         collection = get_object_or_404(Collection, id=collection_id)
-        user = self.request.user
+        user = request.user
+
+        is_upvoted = CollectionUpvote.objects.filter(user=user, collection=collection).exists()
+        upvote_count = collection.collectionupvote_set.count()
+
+        return Response({'is_upvoted': is_upvoted, 'upvote_count': upvote_count}, status=status.HTTP_200_OK)
+
+    def post(self, request, collection_id):
+        collection = get_object_or_404(Collection, id=collection_id)
+        user = request.user
 
         # Check if the user has already upvoted the collection
         if CollectionUpvote.objects.filter(user=user, collection=collection).exists():
             # If the user has already upvoted, remove the upvote
             CollectionUpvote.objects.filter(user=user, collection=collection).delete()
-            return Response({'message': 'Upvote removed'}, status=status.HTTP_200_OK)
+            return Response({'message': 'Upvote removed', 'upvote_count': collection.collectionupvote_set.count()}, status=status.HTTP_200_OK)
         else:
             # If the user has not upvoted, create a new upvote
+            serializer = self.serializer_class(data=request.data)
+            serializer.is_valid(raise_exception=True)
             serializer.save(user=user, collection=collection)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-    def create(self, request, *args, **kwargs):
-        try:
-            return super().create(request, *args, **kwargs)
-        except serializers.ValidationError as e:
-            return Response({'error': e.detail}, status=status.HTTP_400_BAD_REQUEST)
-
+            return Response({'message': 'Upvote added', 'upvote_count': collection.collectionupvote_set.count()}, status=status.HTTP_201_CREATED)
+        
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def check_favorite(request):
@@ -1027,7 +1031,7 @@ Filename: C:\Users\maman\Desktop\ATLAS\atlas\frontend\src\CollectionDetailsPage.
   .upvote-button {
     padding: 10px 20px;
     font-size: 16px;
-    background-color: #f0f0f0;
+    background-color: #00fd59;
     border: none;
     border-radius: 4px;
     cursor: pointer;
@@ -1035,7 +1039,7 @@ Filename: C:\Users\maman\Desktop\ATLAS\atlas\frontend\src\CollectionDetailsPage.
   }
   
   .upvote-button:hover {
-    background-color: #e0e0e0;
+    background-color: #00952f;
   }
 
 
@@ -1146,45 +1150,22 @@ const CollectionDetailsPage = () => {
     }
   };
 
-  const toggleUpvote = async () => {
-    try {
-      const response = await axios.post(`http://localhost:8000/api/collections/${collectionId}/upvote/`, null, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
-        },
-      });
-  
-      if (response.status === 200) {
-        // Upvote removed
-        setIsUpvoted(false);
-        setUpvoteCount(upvoteCount - 1);
-        toast.success('Upvote removed successfully!');
-      } else if (response.status === 201) {
-        // Upvote added
-        setIsUpvoted(true);
-        setUpvoteCount(upvoteCount + 1);
-        toast.success('Upvote added successfully!');
-      }
-    } catch (error) {
-      console.error('Error upvoting collection:', error);
-      if (error.response) {
-        // The request was made and the server responded with a status code
-        // that falls out of the range of 2xx
-        console.log(error.response.data);
-        console.log(error.response.status);
-        console.log(error.response.headers);
-        toast.error('An error occurred while upvoting the collection.');
-      } else if (error.request) {
-        // The request was made but no response was received
-        console.log(error.request);
-        toast.error('No response received from the server.');
-      } else {
-        // Something happened in setting up the request that triggered an Error
-        console.log('Error', error.message);
-        toast.error('An error occurred while setting up the request.');
-      }
-    }
-  };
+const toggleUpvote = async () => {
+  try {
+    const response = await axios.post(`http://localhost:8000/api/collections/${collectionId}/upvote/`, null, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+      },
+    });
+
+    setIsUpvoted(response.data.message === 'Upvote added');
+    setUpvoteCount(response.data.upvote_count);
+    toast.success(response.data.message);
+  } catch (error) {
+    console.error('Error upvoting collection:', error);
+    toast.error('An error occurred while upvoting the collection.');
+  }
+};
 
   if (!collection) {
     return <div>Loading...</div>;
