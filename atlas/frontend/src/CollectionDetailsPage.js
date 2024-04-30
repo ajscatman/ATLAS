@@ -93,6 +93,10 @@ const CollectionDetailsPage = () => {
     setIsEditModalOpen(false);
   };
 
+  const checkGameOwnership = () => {
+    return isOwner;
+  };
+
   const updateCollection = async () => {
     try {
       await axios.put(`http://localhost:8000/api/collections/${collectionId}/`, {
@@ -206,7 +210,9 @@ const toggleUpvote = async () => {
               <p>Genres: {game.genres}</p>
               <p>Platforms: {game.platforms}</p>
             </div>
-            <button onClick={() => handleGameDelete(game.id)}>Delete</button>
+            {checkGameOwnership() && (
+              <button onClick={() => handleGameDelete(game.id)}>Delete</button>
+            )}
           </li>
         ))}
       </ul>
