@@ -17,6 +17,7 @@ const CollectionDetailsPage = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editedTitle, setEditedTitle] = useState('');
   const [editedDescription, setEditedDescription] = useState('');
+  const [editedGames, setEditedGames] = useState([]);
 
   useEffect(() => {
     fetchCollectionDetails();
@@ -24,6 +25,10 @@ const CollectionDetailsPage = () => {
     checkCollectionOwnership();
     fetchUpvoteStatus();
   }, [collectionId]);
+
+  useEffect(() => {
+    setEditedGames(games);
+  }, [games]);
 
   const fetchCollectionDetails = async () => {
     try {
@@ -122,6 +127,29 @@ const CollectionDetailsPage = () => {
     }
   };
 
+  const handleGameDelete = async (gameId) => {
+    try {
+      // Remove the game from the editedGames state
+      setEditedGames(editedGames.filter((game) => game.id !== gameId));
+      // Send a delete request to the backend
+      const response = await axios.delete(`http://localhost:8000/api/collections/${collectionId}/games/${gameId}/delete/`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+        },
+      });
+      // Fetch the updated list of games from the backend
+      fetchCollectionGames();
+      toast.success(response.data.message);
+    } catch (error) {
+      console.error('Error deleting game from collection:', error);
+      if (error.response && error.response.data && error.response.data.error) {
+        toast.error(error.response.data.error);
+      } else {
+        toast.error('An error occurred while removing the game from the collection.');
+      }
+    }
+  };
+
   const fetchUpvoteStatus = async () => {
     try {
       const response = await axios.get(`http://localhost:8000/api/collections/${collectionId}/upvote/`, {
@@ -169,7 +197,7 @@ const toggleUpvote = async () => {
       )}
       <h2 className="games-heading">Games <span className="upvote-score">Score: {upvoteCount}</span></h2>
       <ul className="game-list">
-        {games.map((game) => (
+        {editedGames.map((game) => (
           <li key={game.id} className="game-item">
             <img src={game.cover} alt={game.name} />
             <div className="game-details">
@@ -178,6 +206,7 @@ const toggleUpvote = async () => {
               <p>Genres: {game.genres}</p>
               <p>Platforms: {game.platforms}</p>
             </div>
+            <button onClick={() => handleGameDelete(game.id)}>Delete</button>
           </li>
         ))}
       </ul>

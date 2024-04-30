@@ -201,6 +201,17 @@ def search_games_view(request):
     games = search_games(query, search_type) 
     return Response({'results': games})
 
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_collection_game(request, collection_id, game_id):
+    try:
+        collection_game = CollectionGame.objects.get(collection_id=collection_id, game_id=game_id)
+        if collection_game.collection.user != request.user:
+            return Response({'error': 'You do not have permission to delete this game from the collection.'}, status=status.HTTP_403_FORBIDDEN)
+        collection_game.delete()
+        return Response({'message': 'Game removed from the collection successfully.'}, status=status.HTTP_204_NO_CONTENT)
+    except CollectionGame.DoesNotExist:
+        return Response({'error': 'Game not found in the collection.'}, status=status.HTTP_404_NOT_FOUND)
 
 
 def search_games(query, search_type='title'):
@@ -370,3 +381,19 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
     def get_object(self):
         return self.request.user
     
+class CollectionGameDeleteView(generics.DestroyAPIView):
+    queryset = CollectionGame.objects.all()
+    permission_classes = [permissions.IsAuthenticated]
+
+    def delete(self, request, *args, **kwargs):
+        collection_id = self.kwargs['collection_id']
+        game_id = self.kwargs['pk']
+
+        try:
+            game = CollectionGame.objects.get(collection_id=collection_id, game_id=game_id)
+            game.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except CollectionGame.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        
+
