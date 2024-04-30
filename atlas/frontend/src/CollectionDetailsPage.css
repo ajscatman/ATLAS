@@ -95,3 +95,50 @@
   .upvote-button:hover {
     background-color: #00952f;
   }
+
+  .delete-button,
+  .edit-button {
+  padding: 10px 20px;
+  font-size: 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-bottom: 20px;
+  transition: background-color 0.3s ease;
+}
+
+.delete-button {
+  background-color: #f44336;
+  color: #ffffff;
+}
+
+.delete-button:hover {
+  background-color: #b90909;
+  color: black;
+}
+
+.edit-button {
+  background-color: #007bff;
+  color: #ffffff;
+  margin-left: 10px;
+}
+
+.edit-button:hover {
+  background-color: #0056b3;
+}
+
+.game-item button {
+  margin-left: 10px;
+  font-size: 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  background-color: #ff6200;
+  color: #ffffff;
+  transition: background-color 0.3s ease;
+}
+
+.game-item button:hover {
+  background-color: #b31919;
+  color: black;
+}
