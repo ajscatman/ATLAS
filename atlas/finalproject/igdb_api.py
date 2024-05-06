@@ -16,7 +16,7 @@ def igdb_api_request(endpoint, query):
     response = requests.post(url, headers=headers, data=data)
     response_json = response.json()
 
-    # Log the raw API response to help with debugging
+    # debugging
     print(f"API Response for {query}: {response_json}")
 
     return response_json

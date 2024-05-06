@@ -9,7 +9,7 @@ import 'react-toastify/dist/ReactToastify.css';
 const GameDetailsPage = () => {
   const { id } = useParams();
   const [gameDetails, setGameDetails] = useState(null);
-  const [isFavorite, setIsFavorite] = useState(false);
+  const [isFavourite, setIsFavourite] = useState(false);
   const [isCollectionModalOpen, setIsCollectionModalOpen] = useState(false);
   const [userCollections, setUserCollections] = useState([]);
   const [selectedCollectionId, setSelectedCollectionId] = useState('');
@@ -18,7 +18,7 @@ const GameDetailsPage = () => {
 
   useEffect(() => {
     fetchGameDetails();
-    checkFavoriteStatus();
+    checkFavouriteStatus();
     fetchUserCollections();
   }, [id]);
 
@@ -52,23 +52,23 @@ const GameDetailsPage = () => {
     }
   };
 
-  const checkFavoriteStatus = async () => {
+  const checkFavouriteStatus = async () => {
     try {
-      const response = await axios.get(`http://localhost:8000/api/check-favorite/?game_id=${id}`, {
+      const response = await axios.get(`http://localhost:8000/api/check-favourite/?game_id=${id}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
         },
       });
-      setIsFavorite(response.data.is_favorite);
+      setIsFavourite(response.data.is_favourite);
     } catch (error) {
-      console.error('Error checking favorite status:', error);
+      console.error('Error checking favourite status:', error);
     }
   };
 
-  const toggleFavorite = async () => {
+  const toggleFavourite = async () => {
     try {
       await axios.post(
-        'http://localhost:8000/api/toggle-favorite/',
+        'http://localhost:8000/api/toggle-favourite/',
         { game_id: id },
         {
           headers: {
@@ -76,9 +76,9 @@ const GameDetailsPage = () => {
           },
         }
       );
-      setIsFavorite(!isFavorite);
+      setIsFavourite(!isFavourite);
     } catch (error) {
-      console.error('Error toggling favorite:', error);
+      console.error('Error toggling favourite:', error);
     }
   };
 
@@ -169,7 +169,7 @@ const GameDetailsPage = () => {
         <div className={`rating-box ${getRatingClass(gameDetails.rating)}`} id="rating-box-2">
           <strong>Rating:</strong> {gameDetails.rating ? gameDetails.rating.toFixed(2) : 'Not Rated'}
         </div>
-        <button className="add-to-favorites-button" onClick={toggleFavorite}>{isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}</button>
+        <button className="add-to-favourites-button" onClick={toggleFavourite}>{isFavourite ? 'Remove from Favourites' : 'Add to Favourites'}</button>
         <button className="add-to-collections-button" onClick={openCollectionModal}>Add to Collection</button>
       </div>
       <Modal

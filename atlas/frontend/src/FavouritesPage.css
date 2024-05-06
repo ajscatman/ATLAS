@@ -13,24 +13,24 @@
     animation: fadeInUp 1s ease 0s forwards;
   }
 
-.favorites-page {
+.favourites-page {
     text-align: center;
     padding: 20px;
   }
   
-  .favorites-heading {
+  .favourites-heading {
     font-size: 32px;
     margin-bottom: 20px;
     color: #000000;
   }
   
-  .favorites-grid {
+  .favourites-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     grid-gap: 20px;
   }
   
-  .favorite-card {
+  .favourite-card {
     border: 1px solid rgba(0, 0, 0, 0.833);
     background-color: rgb(233, 198, 0);
     color: rgb(20, 20, 20);
@@ -40,11 +40,11 @@
     transition: transform 0.2s ease;
   }
   
-  .favorite-card:hover {
+  .favourite-card:hover {
     transform: translateY(-5px);
   }
   
-  .favorite-card img {
+  .favourite-card img {
     width: 100%;
     height: auto;
     margin-bottom: 10px;
@@ -52,12 +52,12 @@
     border-radius: 4px;
   }
   
-  .favorite-card h3 {
+  .favourite-card h3 {
     font-size: 18px;
     margin-bottom: 10px;
   }
   
-  .favorite-card p {
+  .favourite-card p {
     margin-bottom: 5px;
   }
   

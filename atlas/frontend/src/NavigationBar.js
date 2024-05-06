@@ -47,7 +47,7 @@ const NavigationBar = () => {
                   <Link to="/collections" className="nav-link">Collections</Link>
                 </li>
                 <li className="nav-item">
-                  <Link to="/favorites" className="nav-link">Favorites</Link>
+                  <Link to="/favourites" className="nav-link">Favourites</Link>
                 </li>
                 <li className="nav-item">
                   <Link to="/profile" className="nav-link">Profile</Link>

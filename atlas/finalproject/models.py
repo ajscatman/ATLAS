@@ -1,8 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-# Represents a game that a user has marked as a favorite. Each user-game pair must be unique.
-class Favorite(models.Model):
+# Represents a game that a user has marked as a favourite. Each user-game pair must be unique.
+class Favourite(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     game_id = models.IntegerField()
 

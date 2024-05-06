@@ -11,7 +11,7 @@ from django.contrib.auth.models import User
 from django.db.models import Count
 from .serializers import UserRegistrationSerializer, UserLoginSerializer, UserProfileSerializer, CollectionSerializer, CollectionGameSerializer, UserSerializer, CollectionUpvoteSerializer
 from .igdb_api import search_games, igdb_api_request
-from .models import Favorite, Collection, CollectionGame, CollectionUpvote
+from .models import Favourite, Collection, CollectionGame, CollectionUpvote
 import requests
 
 class UserSearchView(generics.ListAPIView):
@@ -134,40 +134,40 @@ class TopCollectionsView(generics.ListAPIView):
         
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def check_favorite(request):
+def check_favourite(request):
     user = request.user
     game_id = request.GET.get('game_id')
 
     if not game_id:
         return Response({'error': 'Game ID is required.'}, status=400)
 
-    is_favorite = Favorite.objects.filter(user=user, game_id=game_id).exists()
+    is_favourite = Favourite.objects.filter(user=user, game_id=game_id).exists()
 
-    return Response({'is_favorite': is_favorite})
+    return Response({'is_favourite': is_favourite})
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def toggle_favorite(request):
+def toggle_favourite(request):
     user = request.user
     game_id = request.data.get('game_id')
 
     if not game_id:
         return Response({'error': 'Game ID is required.'}, status=400)
 
-    favorite, created = Favorite.objects.get_or_create(user=user, game_id=game_id)
+    favourite, created = Favourite.objects.get_or_create(user=user, game_id=game_id)
 
     if not created:
-        favorite.delete()
+        favourite.delete()
 
-    return Response({'is_favorite': created})
+    return Response({'is_favourite': created})
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def get_favorites(request):
+def get_favourite(request):
     user = request.user
-    favorites = Favorite.objects.filter(user=user)
+    favourite = Favourite.objects.filter(user=user)
 
-    game_ids = [favorite.game_id for favorite in favorites]
+    game_ids = [favourite.game_id for favourite in favourite]
 
     if game_ids:
         endpoint = 'games'

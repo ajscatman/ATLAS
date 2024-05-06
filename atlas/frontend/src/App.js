@@ -8,7 +8,7 @@ import HomePage from './HomePage';
 import NavigationBar from './NavigationBar';
 import ProfilePage from './ProfilePage';
 import GameDetailsPage from './GameDetailsPage';
-import FavoritesPage from './FavoritesPage';
+import FavouritesPage from './FavouritesPage';
 import CollectionsPage from './CollectionsPage';
 import CollectionDetailsPage from './CollectionDetailsPage';
 import UsersPage from './UsersPage';
@@ -38,7 +38,7 @@ const App = () => {
           <Route path="/register" element={<RegistrationForm />} />
           <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
           <Route path="/game/:id" element={<ProtectedRoute><GameDetailsPage /></ProtectedRoute>} />
-          <Route path="/favorites" element={<ProtectedRoute><FavoritesPage /></ProtectedRoute>} />
+          <Route path="/favourites" element={<ProtectedRoute><FavouritesPage /></ProtectedRoute>} />
           <Route path="/collections" element={<ProtectedRoute><CollectionsPage /></ProtectedRoute>} />
           <Route path="/collections/:collectionId" element={<ProtectedRoute><CollectionDetailsPage /></ProtectedRoute>} />
           <Route path="/users" element={<ProtectedRoute><UsersPage /></ProtectedRoute>} />

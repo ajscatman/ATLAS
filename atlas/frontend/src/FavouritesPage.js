@@ -1,26 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import './FavoritesPage.css';
+import './FavouritesPage.css';
 
-const FavoritesPage = () => {
-  const [favorites, setFavorites] = useState([]);
+const FavouritesPage = () => {
+  const [favourites, setFavourites] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchFavorites();
+    fetchFavourites();
   }, []);
 
-  const fetchFavorites = async () => {
+  const fetchFavourites = async () => {
     try {
-      const response = await axios.get('http://localhost:8000/api/favorites/', {
+      const response = await axios.get('http://localhost:8000/api/favourites/', {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
         },
       });
-      setFavorites(response.data);
+      setFavourites(response.data);
     } catch (error) {
-      console.error('Error fetching favorites:', error);
+      console.error('Error fetching favourites:', error);
     }
   };
 
@@ -29,12 +29,12 @@ const FavoritesPage = () => {
   };
 
   return (
-    <div className="favorites-page">
-      <h1 className="favorites-heading animated-element">My Favorites</h1>
+    <div className="favourites-page">
+      <h1 className="favourites-heading animated-element">My Favourites</h1>
       <h4 className="animated-element">Your own hall of fame where you keep your cherished titles.</h4>
-      <div className="favorites-grid animated-element">
-        {favorites.map((game) => (
-          <div key={game.id} className="favorite-card" onClick={() => showGameDetails(game.id)}>
+      <div className="favourites-grid animated-element">
+        {favourites.map((game) => (
+          <div key={game.id} className="favourite-card" onClick={() => showGameDetails(game.id)}>
             <img src={game.cover.url} alt={game.name} />
             <h3>{game.name}</h3>
         </div>
@@ -56,4 +56,4 @@ function getRatingClass(rating) {
   }
 }
 
-export default FavoritesPage;
+export default FavouritesPage;
