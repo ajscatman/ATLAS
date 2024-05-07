@@ -2,7 +2,7 @@ from django.urls import path
 from .views import UserRegistrationView, UserLoginView, UserProfileView, validate_password, igdb_oauth_callback, \
     search_games_view, game_details_view, toggle_favourite, check_favourite, get_favourite, CollectionGameListCreateView, \
     CollectionGameRetrieveUpdateDestroyView, CollectionListCreateView, CollectionRetrieveUpdateDestroyView, get_games_by_ids, UserSearchView, \
-    UserCollectionsView, CollectionOwnershipCheck, CollectionUpvoteView, TopCollectionsView, delete_collection_game
+    UserCollectionsView, CollectionOwnershipCheck, CollectionUpvoteView, TopCollectionsView, delete_collection_game, UserDetailsView
 
 urlpatterns = [
     path('register/', UserRegistrationView.as_view(), name='user-registration'),
@@ -26,4 +26,5 @@ urlpatterns = [
     path('collections/<int:collection_id>/upvote/', CollectionUpvoteView.as_view(), name='collection-upvote'),
     path('top-collections/', TopCollectionsView.as_view(), name='top-collections'),
     path('collections/<int:collection_id>/games/<int:game_id>/delete/', delete_collection_game, name='collection-game-delete'),
+    path('users/<int:pk>/', UserDetailsView.as_view(), name='user-details'),
 ]

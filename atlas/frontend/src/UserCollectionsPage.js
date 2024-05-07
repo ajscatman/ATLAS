@@ -6,9 +6,11 @@ import './UserCollectionsPage.css';
 const UserCollectionsPage = () => {
   const { userId } = useParams();
   const [collections, setCollections] = useState([]);
+  const [userName, setUserName] = useState('');
 
   useEffect(() => {
     fetchUserCollections();
+    fetchUserName();
   }, [userId]);
 
   const fetchUserCollections = async () => {
@@ -20,9 +22,18 @@ const UserCollectionsPage = () => {
     }
   };
 
+  const fetchUserName = async () => {
+    try {
+      const response = await axios.get(`http://localhost:8000/api/users/${userId}/`);
+      setUserName(response.data.username);
+    } catch (error) {
+      console.error('Error fetching user name:', error);
+    }
+  };
+
   return (
     <div className="user-collections-page">
-      <h1 className="animated-element user-collections-heading">User Collections</h1>
+      <h1 className="animated-element user-collections-heading">{userName}'s Collections</h1>
       <ul className="collection-list animated-element">
         {collections.map((collection) => (
           <Link

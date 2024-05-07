@@ -5,9 +5,11 @@ import './CollectionsPage.css';
 
 const CollectionsPage = () => {
   const [collections, setCollections] = useState([]);
+  const [userName, setUserName] = useState('');
 
   useEffect(() => {
     fetchCollections();
+    fetchUserName();
   }, []);
 
   const fetchCollections = async () => {
@@ -23,9 +25,27 @@ const CollectionsPage = () => {
     }
   };
 
+  const fetchUserName = async () => {
+    try {
+      const response = await axios.get('http://localhost:8000/api/profile/', {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+        },
+      });
+      const user = response.data;
+      if (user && user.first_name) {
+        setUserName(user.first_name);
+      } else {
+        setUserName(user.username);
+      }
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+    }
+  };
+
   return (
     <div className="collections-page">
-      <h1 className="collections-heading animated-element">My Collections</h1>
+      <h1 className="collections-heading animated-element">{userName}'s Collections</h1>
       <h4 className="animated-element">This is where your curated collections are stored.</h4>
       <ul className="collection-list animated-element">
         {collections.map((collection) => (

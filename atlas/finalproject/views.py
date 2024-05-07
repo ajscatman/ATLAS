@@ -14,6 +14,10 @@ from .igdb_api import search_games, igdb_api_request
 from .models import Favourite, Collection, CollectionGame, CollectionUpvote
 import requests
 
+class UserDetailsView(generics.RetrieveAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
 class UserSearchView(generics.ListAPIView):
     serializer_class = UserSerializer
 
