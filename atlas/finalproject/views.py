@@ -293,8 +293,6 @@ def game_details_view(request, game_id):
 
     if response:
         game_data = response[0]  # Assuming the first item in the response is the game data
-        
-        # Use the cover_big size for the cover image URL
         cover_url = game_data.get('cover', {}).get('url', '')
         if cover_url:
             game_data['cover'] = cover_url.replace('t_thumb', 't_cover_big')
@@ -319,15 +317,14 @@ def igdb_oauth_callback(request):
         'redirect_uri': settings.IGDB_REDIRECT_URI,
     }
 
-    # Make a POST request to the IGDB API's token endpoint to exchange the authorization code for an access token
+    # Make a POST request to the IGDB API's token
     response = requests.post(token_url, params=params)
     data = response.json()
 
     access_token = data.get('access_token')
-    # Store the access token securely (e.g., in the user's session or database)
+    # Store the access token securely
     request.session['igdb_access_token'] = access_token
 
-    # Redirect the user to your frontend application
     return redirect(settings.FRONTEND_URL)
 
 class UserRegistrationView(generics.CreateAPIView):

@@ -13,14 +13,6 @@ const HomePage = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
 
-  // This function, handleSearch, is an asynchronous function that is triggered when the 'Enter' key is pressed.
-  // It sets a loading state to true, indicating that a search operation is in progress.
-  // It then makes a GET request to a local search API, passing in a search query and search type as parameters.
-  // The search results are then stored in state using the setSearchResults function.
-  // If there are any results, a success message is displayed using the toast.success function.
-  // If there are no results, an informational message is displayed using the toast.info function.
-  // If an error occurs during the search operation, it is caught and logged to the console, and an error message is displayed to the user.
-  // Finally, the loading state is set to false, indicating that the search operation has completed.
   const handleSearch = async (e) => {
     if (e.key === 'Enter') {
       setIsLoading(true);
